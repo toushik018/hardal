@@ -154,6 +154,38 @@ export const api = createApi({
             }),
             invalidatesTags: ['Cart'],
         }),
+        login: builder.mutation<any, { email: string; password: string }>({
+            query: (credentials) => ({
+                url: 'login',
+                method: 'POST',
+                body: credentials,
+            }),
+        }),
+        register: builder.mutation<
+            any,
+            {
+                firstname: string;
+                lastname: string;
+                email: string;
+                telephone: string;
+                password: string;
+                company?: string;
+                department?: string;
+            }
+        >({
+            query: (credentials) => ({
+                url: 'register',
+                method: 'POST',
+                body: credentials,
+            }),
+        }),
+        forgotPassword: builder.mutation<any, { email: string }>({
+            query: (data) => ({
+                url: 'forgot-password',
+                method: 'POST',
+                body: data,
+            }),
+        }),
     }),
 });
 
@@ -176,4 +208,7 @@ export const {
     useClearCartMutation,
     useAddPackageMutation,
     useDeletePackageMutation,
+    useLoginMutation,
+    useRegisterMutation,
+    useForgotPasswordMutation,
 } = api;

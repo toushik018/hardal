@@ -6,8 +6,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductList from "@/components/Products/ProductList";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   useGetCartQuery,
   useGetMenuContentQuery,
@@ -15,7 +13,6 @@ import {
   useAddPackageMutation,
 } from "@/services/api";
 import ExtraProductsModal from "@/components/Modals/ExtraProductsModal";
-import Loading from "@/components/Loading/Loading";
 import Stepper from "@/components/Stepper/Stepper";
 import { ShopSkeleton } from "@/components/Skeletons";
 import CartSummary from "@/components/Cart/CartSummary";
