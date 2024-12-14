@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Truck, ArrowLeft } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { useGetShippingMethodQuery, useSetShippingMethodMutation } from "@/services/api";
-import Loading from "../Loading";
+import Loading from "@/components/Loading/Loading";
 
 interface ShippingMethodStepProps {
   onSetShippingMethod: (method: string) => Promise<void>;

@@ -1,16 +1,20 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { IPackages } from "../../utils/models";
+import { Package } from "@/types/package";
 
-const VerticalCard = ({ packageData }: { packageData: IPackages }) => {
-  const router = useRouter();
+interface VerticalCardProps {
+  packageData: Package;
+  onSelect?: (packageData: Package) => void;
+}
 
+const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/shop?menu=${packageData.id}`);
+    if (onSelect) {
+      onSelect(packageData);
+    }
   };
 
   return (

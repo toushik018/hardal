@@ -4,7 +4,7 @@ import ReferencesSlider from "@/components/ReferancesSlider/ReferancesSlider";
 
 const Section5 = () => {
   return (
-    <section className="relative py-32">
+    <section id="references-section" className="relative py-32">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[#FFFAF5] -z-20" />
       <div className="absolute inset-0 bg-[url('/pattern.png')] opacity-5" />

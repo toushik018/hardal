@@ -1,10 +1,12 @@
 const Section3 = () => {
   return (
-    <section className="container mx-auto px-4 py-24">
+    <section id="gallery-section" className="container mx-auto px-4 py-24">
       {/* Header Section */}
       <div className="max-w-3xl mx-auto text-center mb-16">
-        <span className="inline-block px-4 py-2 bg-first/5 rounded-full 
-                       text-sm font-medium text-first tracking-wide mb-4">
+        <span
+          className="inline-block px-4 py-2 bg-first/5 rounded-full 
+                       text-sm font-medium text-first tracking-wide mb-4"
+        >
           Galerie
         </span>
         <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
@@ -12,7 +14,8 @@ const Section3 = () => {
           <span className="text-first">kulinarischen Meisterwerke</span>
         </h2>
         <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-          Ein Einblick in unsere Kreationen, die Ihre Veranstaltung zu einem unvergesslichen Erlebnis machen
+          Ein Einblick in unsere Kreationen, die Ihre Veranstaltung zu einem
+          unvergesslichen Erlebnis machen
         </p>
       </div>
 

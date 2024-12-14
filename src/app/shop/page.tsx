@@ -8,9 +8,16 @@ import ProductList from "@/components/Products/ProductList";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useGetCartQuery, useGetMenuContentQuery, useGetCategoriesQuery, useAddPackageMutation } from "@/services/api";
+import {
+  useGetCartQuery,
+  useGetMenuContentQuery,
+  useGetCategoriesQuery,
+  useAddPackageMutation,
+} from "@/services/api";
 import ExtraProductsModal from "@/components/Modals/ExtraProductsModal";
 import Loading from "@/components/Loading/Loading";
+import Stepper from "@/components/Stepper/Stepper";
+import { ShopSkeleton } from "@/components/Skeletons";
 
 interface MenuContent {
   name: string;
@@ -33,7 +40,7 @@ const Shop = () => {
       lastCount: number;
     };
   }>(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(`categoryStates-${menuId}`);
       return saved ? JSON.parse(saved) : {};
     }
@@ -54,7 +61,6 @@ const Shop = () => {
   const currentCategory = menuContentData?.contents[activeStep];
   const menuContents = menuContentData?.contents || [];
 
-
   const [addPackage] = useAddPackageMutation();
 
   // Memoize getCurrentCategoryCount
@@ -70,9 +76,7 @@ const Shop = () => {
     }
 
     if (cartData.products && cartData.products.length > 0) {
-      const validProductIds = allProducts.map((p) =>
-        p.product_id.toString()
-      );
+      const validProductIds = allProducts.map((p) => p.product_id.toString());
 
       const categoryProducts = cartData.products.filter(
         (product: { product_id: any }) =>
@@ -86,10 +90,18 @@ const Shop = () => {
     }
 
     return 0;
-  }, [currentCategory?.name, cartData?.cart?.menu?.contents, cartData?.products, allProducts]);
+  }, [
+    currentCategory?.name,
+    cartData?.cart?.menu?.contents,
+    cartData?.products,
+    allProducts,
+  ]);
 
   // Memoize the current count to prevent infinite loops
-  const currentCount = useMemo(() => getCurrentCategoryCount(), [getCurrentCategoryCount]);
+  const currentCount = useMemo(
+    () => getCurrentCategoryCount(),
+    [getCurrentCategoryCount]
+  );
 
   const { data: categoriesData } = useGetCategoriesQuery();
 
@@ -101,27 +113,26 @@ const Shop = () => {
       setAllProducts([]);
 
       try {
-        const productPromises = currentCategory.ids.map(
-          (id: number) =>
-            fetch(`/api/get-products-by-category`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ categoryId: id.toString() }),
-            }).then(async (res) => {
-              const data = await res.json();
-              if (data.products) {
-                return {
-                  ...data,
-                  products: data.products.map((product: any) => ({
-                    ...product,
-                    category_id: id.toString()
-                  }))
-                };
-              }
-              return data;
-            })
+        const productPromises = currentCategory.ids.map((id: number) =>
+          fetch(`/api/get-products-by-category`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ categoryId: id.toString() }),
+          }).then(async (res) => {
+            const data = await res.json();
+            if (data.products) {
+              return {
+                ...data,
+                products: data.products.map((product: any) => ({
+                  ...product,
+                  category_id: id.toString(),
+                })),
+              };
+            }
+            return data;
+          })
         );
 
         const results = await Promise.all(productPromises);
@@ -143,15 +154,15 @@ const Shop = () => {
 
     fetchProducts();
   }, [currentCategory?.ids]);
-console.log(currentCategory)
+  console.log(currentCategory);
   useEffect(() => {
     if (currentCategory && !categoryStates[currentCategory.name]) {
-      setCategoryStates(prev => ({
+      setCategoryStates((prev) => ({
         ...prev,
         [currentCategory.name]: {
           hasShownModal: false,
-          lastCount: currentCount
-        }
+          lastCount: currentCount,
+        },
       }));
     }
   }, [currentCategory?.name, currentCount]);
@@ -167,42 +178,41 @@ console.log(currentCategory)
     if (categoryState) {
       // Reset modal state if count drops below requirement
       if (currentCount < requiredCount) {
-        setCategoryStates(prev => ({
+        setCategoryStates((prev) => ({
           ...prev,
           [categoryName]: {
             hasShownModal: false,
-            lastCount: currentCount
-          }
+            lastCount: currentCount,
+          },
         }));
       }
       // Show modal when conditions are met
       else if (
-        currentCount >= requiredCount && 
-        !categoryState.hasShownModal && 
+        currentCount >= requiredCount &&
+        !categoryState.hasShownModal &&
         currentCount > categoryState.lastCount
       ) {
         setShowExtraProductsModal(true);
-        setCategoryStates(prev => ({
+        setCategoryStates((prev) => ({
           ...prev,
           [categoryName]: {
             hasShownModal: true,
-            lastCount: currentCount
-          }
+            lastCount: currentCount,
+          },
         }));
       }
       // Update last count
       else if (currentCount !== categoryState.lastCount) {
-        setCategoryStates(prev => ({
+        setCategoryStates((prev) => ({
           ...prev,
           [categoryName]: {
             ...prev[categoryName],
-            lastCount: currentCount
-          }
+            lastCount: currentCount,
+          },
         }));
       }
     }
   }, [currentCategory?.name, currentCount]);
-
 
   useEffect(() => {
     if (!currentCategory) return;
@@ -211,21 +221,22 @@ console.log(currentCategory)
       const categoryName = currentCategory.name;
       const requiredCount = currentCategory.count || 0;
       const categoryState = categoryStates[categoryName];
-      
+
       if (currentCount >= requiredCount && !categoryState?.hasShownModal) {
         setShowExtraProductsModal(true);
-        setCategoryStates(prev => ({
+        setCategoryStates((prev) => ({
           ...prev,
           [categoryName]: {
             hasShownModal: true,
-            lastCount: currentCount
-          }
+            lastCount: currentCount,
+          },
         }));
       }
     };
 
     window.addEventListener("showExtraProductsModal", handleShowModal);
-    return () => window.removeEventListener("showExtraProductsModal", handleShowModal);
+    return () =>
+      window.removeEventListener("showExtraProductsModal", handleShowModal);
   }, [currentCategory?.name, currentCount, categoryStates]);
 
   useEffect(() => {
@@ -242,7 +253,10 @@ console.log(currentCategory)
 
   useEffect(() => {
     if (menuId) {
-      localStorage.setItem(`categoryStates-${menuId}`, JSON.stringify(categoryStates));
+      localStorage.setItem(
+        `categoryStates-${menuId}`,
+        JSON.stringify(categoryStates)
+      );
     }
   }, [categoryStates, menuId]);
 
@@ -252,7 +266,9 @@ console.log(currentCategory)
 
     if (currentCount < requiredCount) {
       toast.error(
-        `Bitte wählen Sie mindestens ${requiredCount} ${currentCategory.name} Artikel${
+        `Bitte wählen Sie mindestens ${requiredCount} ${
+          currentCategory.name
+        } Artikel${
           requiredCount > 1 ? "s" : ""
         }. Sie haben ${currentCount} ausgewählt.`
       );
@@ -267,7 +283,9 @@ console.log(currentCategory)
         await addPackage().unwrap();
         router.push("/cart");
       } catch (error) {
-        toast.error("Fehler beim Hinzufügen des Pakets. Bitte versuchen Sie es erneut.");
+        toast.error(
+          "Fehler beim Hinzufügen des Pakets. Bitte versuchen Sie es erneut."
+        );
       }
     }
   };
@@ -284,7 +302,9 @@ console.log(currentCategory)
 
     if (currentCount < requiredCount) {
       toast.error(
-        `Bitte wählen Sie mindestens ${requiredCount} ${currentCategory.name} Artikel${
+        `Bitte wählen Sie mindestens ${requiredCount} ${
+          currentCategory.name
+        } Artikel${
           requiredCount > 1 ? "s" : ""
         }. Sie haben ${currentCount} ausgewählt.`
       );
@@ -300,21 +320,45 @@ console.log(currentCategory)
         await addPackage().unwrap();
         router.push("/cart");
       } catch (error) {
-        toast.error("Fehler beim Hinzufügen des Pakets. Bitte versuchen Sie es erneut.");
+        toast.error(
+          "Fehler beim Hinzufügen des Pakets. Bitte versuchen Sie es erneut."
+        );
       }
     }
   };
 
-  if (isCartLoading || isMenuContentLoading || isLoadingProducts)
-    return <Loading />;
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading state for smoother transition
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const guestCount = searchParams.get("guests");
+
+  useEffect(() => {
+    // Redirect if no guest count
+    if (!guestCount) {
+      router.push("/");
+    }
+  }, [guestCount, router]);
+
+  if (isCartLoading || isMenuContentLoading || isLoadingProducts || isLoading) {
+    return <ShopSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      {/* Sticky Header with Progress */}
+      {/* Sticky Header with Professional Stepper */}
       <div className="sticky top-0 z-30 bg-white border-b">
-        <div className="w-full px-5 py-4">
+        <div className="w-full px-5 py-6">
           <div className="max-w-[1400px] mx-auto">
-            <div className="flex justify-between items-center">
+            {/* Category Info */}
+            <div className="flex justify-between items-center mb-2">
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">
                   {currentCategory?.name}
@@ -323,40 +367,16 @@ console.log(currentCategory)
                   {currentCategory?.count} Auswahl inklusive im Paket
                 </span>
               </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">
-                  Schritt {activeStep + 1} von {menuContents.length}
-                </span>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handlePrevious}
-                    className={`p-2 rounded-full ${
-                      activeStep === 0
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                    }`}
-                    disabled={activeStep === 0}
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
-              </div>
             </div>
-            {/* Progress Bar */}
-            <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-green-600 h-2 rounded-full transition-all duration-500 ease-out"
-                style={{
-                  width: `${((activeStep + 1) / menuContents.length) * 100}%`,
-                }}
-              />
-            </div>
+
+            {/* Use Stepper Component */}
+            <Stepper
+              steps={menuContents}
+              activeStep={activeStep}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+              isLastStep={activeStep === menuContents.length - 1}
+            />
           </div>
         </div>
       </div>
@@ -401,17 +421,19 @@ console.log(currentCategory)
                     <button
                       onClick={handlePrevious}
                       disabled={activeStep === 0}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-green-600 rounded-xl hover:bg-green-50 disabled:opacity-30 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-first rounded-xl hover:bg-first/10 disabled:opacity-30 transition-colors"
                     >
                       <ChevronLeft className="size-4" />
                       <span className="font-medium">Zurück</span>
                     </button>
                     <button
                       onClick={handleNext}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 rounded-xl hover:bg-green-700 text-white transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-first rounded-xl hover:bg-first/90 text-white transition-colors"
                     >
                       <span className="font-medium">
-                        {activeStep === menuContents.length - 1 ? "Zur Kasse" : "Weiter"}
+                        {activeStep === menuContents.length - 1
+                          ? "Zur Kasse"
+                          : "Weiter"}
                       </span>
                       <ChevronRight className="size-4" />
                     </button>

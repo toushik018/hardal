@@ -61,7 +61,7 @@ const Section6 = () => {
   `;
 
   return (
-    <section className="py-24 bg-[#FFFAF5]">
+    <section id="reservation-section" className="py-24 bg-[#FFFAF5]">
       <div className="container mx-auto px-4 max-w-5xl">
         {/* Section Header */}
         <div className="text-center mb-16">

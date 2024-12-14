@@ -1,26 +1,53 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, ArrowRight, X } from "lucide-react";
+import { Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-interface ExtraProductsModalProps {
+interface GuestsCountModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNext: () => void;
+  packageData: {
+    id: number;
+    name: string;
+    minimumClients: number;
+  };
 }
 
-const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({
+const GuestsCountModal: React.FC<GuestsCountModalProps> = ({
   isOpen,
   onClose,
-  onNext,
+  packageData,
 }) => {
+  const [guestCount, setGuestCount] = useState(packageData.minimumClients);
+  const [error, setError] = useState("");
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     return () => setIsMounted(false);
   }, []);
+
+  const handleSubmit = () => {
+    if (guestCount < packageData.minimumClients) {
+      setError(`Mindestens ${packageData.minimumClients} Gäste erforderlich`);
+      return;
+    }
+    // Navigate to shop page with both menu ID and guest count
+    router.push(`/shop?menu=${packageData.id}&guests=${guestCount}`);
+  };
+
+  const handleGuestCountChange = (value: string) => {
+    const count = parseInt(value);
+    setGuestCount(count);
+    if (count < packageData.minimumClients) {
+      setError(`Mindestens ${packageData.minimumClients} Gäste erforderlich`);
+    } else {
+      setError("");
+    }
+  };
 
   if (!isMounted) return null;
 
@@ -44,7 +71,6 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({
             className="bg-white rounded-2xl p-8 max-w-lg w-full shadow-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -55,67 +81,58 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({
               <X className="w-5 h-5 text-gray-500" />
             </motion.button>
 
-            {/* Icon */}
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
               className="mb-6 bg-first/10 w-16 h-16 rounded-2xl flex items-center justify-center"
             >
-              <ShoppingBag className="w-8 h-8 text-first" />
+              <Users className="w-8 h-8 text-first" />
             </motion.div>
 
-            {/* Content */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                Kategorie vollständig!
+                {packageData.name}
               </h3>
 
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                Sie haben die erforderliche Anzahl an Produkten für diese
-                Kategorie ausgewählt. Möchten Sie weitere Produkte hinzufügen
-                oder zur nächsten Kategorie wechseln?
-              </p>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="guestCount" className="block text-sm font-medium text-gray-700 mb-1">
+                    Anzahl der Gäste
+                  </label>
+                  <input
+                    type="number"
+                    id="guestCount"
+                    min={packageData.minimumClients}
+                    value={guestCount}
+                    onChange={(e) => handleGuestCountChange(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-first/50"
+                  />
+                  {error && (
+                    <p className="text-red-500 text-sm mt-1">{error}</p>
+                  )}
+                </div>
 
-              {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
+                <p className="text-sm text-gray-500">
+                  Mindestanzahl der Gäste: {packageData.minimumClients}
+                </p>
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={onClose}
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl 
-                           font-medium text-gray-700 hover:bg-gray-50 
-                           transition-colors duration-200"
-                >
-                  Weitere Produkte
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={onNext}
-                  className="flex-1 px-6 py-3 bg-first rounded-xl font-medium 
+                  onClick={handleSubmit}
+                  disabled={!!error || !guestCount}
+                  className="w-full px-6 py-3 bg-first rounded-xl font-medium 
                            text-gray-900 hover:bg-first/90 transition-colors 
-                           duration-200 flex items-center justify-center gap-2"
+                           disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Nächste Kategorie
-                  <ArrowRight className="w-4 h-4" />
+                  Weiter zur Auswahl
                 </motion.button>
               </div>
-
-              {/* Optional: Additional Info */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-xs text-gray-500 text-center mt-4"
-              >
-                Sie können jederzeit weitere Produkte zu Ihrem Warenkorb
-                hinzufügen
-              </motion.p>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -124,4 +141,4 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({
   );
 };
 
-export default ExtraProductsModal;
+export default GuestsCountModal; 

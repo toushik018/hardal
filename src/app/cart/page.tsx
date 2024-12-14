@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductItem from "@/components/Products/ProductItem";
@@ -14,8 +14,8 @@ import {
 } from "@/services/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { CartItemSkeleton } from "@/components/Skeletons/CartSkeleton";
-import Image from "next/image";
+import { CartItemSkeleton, CartSkeleton } from "@/components/Skeletons";
+import { ShoppingCart, Trash2 } from "lucide-react";
 interface PackageProduct {
   cart_id: string;
   product_id: string;
@@ -56,7 +56,8 @@ const CartItemWithDetails: React.FC<{
   ) {
     return (
       <div className="flex justify-start items-center py-4 text-red-500">
-        Fehler beim Laden der Produkt-Details. Bitte versuchen Sie es später erneut.
+        Fehler beim Laden der Produkt-Details. Bitte versuchen Sie es später
+        erneut.
       </div>
     );
   }
@@ -68,7 +69,7 @@ const CartItemWithDetails: React.FC<{
     thumb: item.image,
     price: item.price,
     quantity: parseInt(item.quantity),
-    leadTime: productDetails.products[0].leadTime
+    leadTime: productDetails.products[0].leadTime,
   };
 
   return (
@@ -83,6 +84,7 @@ const CartItemWithDetails: React.FC<{
 
 const Cart: React.FC = () => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
   const {
     data: cartData,
     isLoading: isCartLoading,
@@ -97,11 +99,11 @@ const Cart: React.FC = () => {
   // Get all products from packages with proper type checking
   const cartItems = useMemo(() => {
     // Ensure packages is always an array
-    const packages = Array.isArray(cartData?.cart?.order) 
-      ? cartData.cart.order 
+    const packages = Array.isArray(cartData?.cart?.order)
+      ? cartData.cart.order
       : [];
     // Only proceed with flatMap if we have packages
-    const allProducts = packages.flatMap((pkg: PackageOrder) => 
+    const allProducts = packages.flatMap((pkg: PackageOrder) =>
       pkg.products.map((product: PackageProduct) => ({
         ...product,
         package_name: pkg.package,
@@ -141,7 +143,9 @@ const Cart: React.FC = () => {
         toast.error("Fehler beim Erhöhen der Artikelmenge");
       }
     } catch (error: any) {
-      toast.error(error.data?.message || "Fehler beim Erhöhen der Artikelmenge");
+      toast.error(
+        error.data?.message || "Fehler beim Erhöhen der Artikelmenge"
+      );
     }
   };
 
@@ -161,7 +165,9 @@ const Cart: React.FC = () => {
           toast.error("Fehler beim Verringern der Artikelmenge");
         }
       } catch (error: any) {
-        toast.error(error.data?.message || "Fehler beim Verringern der Artikelmenge");
+        toast.error(
+          error.data?.message || "Fehler beim Verringern der Artikelmenge"
+        );
       }
     } else {
       handleRemove(item);
@@ -202,7 +208,7 @@ const Cart: React.FC = () => {
     setIsProcessing(true);
     try {
       // Add any pre-checkout validation here if needed
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Optional: simulate processing
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Optional: simulate processing
       router.push("/checkout");
     } catch (error) {
       toast.error("Fehler beim Weiterleiten zur Kasse");
@@ -210,39 +216,85 @@ const Cart: React.FC = () => {
     }
   };
 
-  if (isCartLoading) return <Loading />;
-  if (cartError) return <div>Fehler beim Laden der Warenkorb-Daten</div>;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
+  if (!isMounted) return null;
+
+  if (isLoading || isCartLoading) {
+    return <CartSkeleton />;
+  }
+
+  if (cartError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl text-red-500 mb-2">
+            Fehler beim Laden der Warenkorb-Daten
+          </h2>
+          <button 
+            onClick={() => refetch()}
+            className="text-first hover:text-first/80"
+          >
+            Erneut versuchen
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen py-28 px-4 md:px-8">
+    <div className="min-h-screen py-12 px-4 md:px-8 bg-gray-50">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="lg:container w-full mx-auto"
+        className="max-w-4xl mx-auto"
       >
-        <div className="bg-green-50 rounded-2xl shadow-md p-6 md:p-8">
+        <div className="bg-first/5 rounded-lg shadow-md p-6 md:p-8">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Ihr Warenkorb</h1>
+            <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+              <ShoppingCart className="mr-2 h-10 w-10" />
+              Ihr Warenkorb
+            </h1>
             {cartItems.length > 0 && (
               <button
                 onClick={() => {
-                  if (window.confirm('Möchten Sie wirklich die gesamte Bestellung stornieren?')) {
+                  if (
+                    window.confirm(
+                      "Sind Sie sicher, dass Sie die gesamte Bestellung stornieren möchten?"
+                    )
+                  ) {
                     handleCancelOrder();
                   }
                 }}
                 disabled={isConfirmingCancel}
-                className={`flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm transition-colors ${
-                  isConfirmingCancel ? 'opacity-50 cursor-not-allowed' : ''
+                className={`flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm transition-colors px-4 py-2 rounded-xl bg-red-100 ${
+                  isConfirmingCancel ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
                 {isConfirmingCancel ? (
                   <>
                     <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                    Wird storniert...
+                    Stornieren...
                   </>
                 ) : (
-                  'Bestellung stornieren'
+                  <>
+                    <Trash2 size={16} />
+                    Bestellung stornieren
+                  </>
                 )}
               </button>
             )}
@@ -257,46 +309,54 @@ const Cart: React.FC = () => {
             >
               <p className="text-xl text-gray-600 mb-6">Ihr Warenkorb ist leer</p>
               <Link
-                href="/menu"
-                className="inline-block bg-green-600 text-white px-6 py-3 rounded-full font-semibold transition-colors hover:bg-green-700"
+                href="/"
+                className="inline-block px-6 py-3 bg-first rounded-xl font-medium 
+                       text-gray-900 hover:bg-first/90 transition-colors 
+                       duration-200 items-center justify-center gap-2"
               >
-                Menü auswählen
+                Menü durchsuchen
               </Link>
             </motion.div>
           ) : (
             <>
-              {/* Group products by package */}
-              {cartData?.cart?.order?.map((pkg: PackageOrder, index: number) => (
-                <div key={index} className="mb-8">
-                  <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-lg">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                      {pkg.package}
-                    </h2>
-                    <span className="text-lg font-bold text-green-600">
-                      {pkg.price}€
-                    </span>
-                  </div>
+              <AnimatePresence mode="wait">
+                {cartData?.cart?.order?.map((pkg: PackageOrder, index: number) => (
+                  <motion.div
+                    key={`${pkg.package}-${index}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="mb-8">
+                      <div className="flex justify-between items-center mb-4 bg-first/20 p-4 rounded-[8px]">
+                        <h2 className="text-xl font-semibold text-gray-800 ">
+                          {pkg.package}
+                        </h2>
+                        <span className="text-lg font-bold text-gray-800">
+                          {pkg.price}€
+                        </span>
+                      </div>
 
-                  <div className="hidden md:grid grid-cols-5 gap-4 mb-4 font-semibold text-gray-700 border-b pb-2">
-                    <div className="col-span-2">Produkt</div>
-                    <div className="text-center">Preis</div>
-                    <div className="text-center">Menge</div>
-                    <div className="text-right">Total</div>
-                  </div>
+                      <div className="hidden md:grid grid-cols-5 gap-4 mb-4 font-semibold text-gray-700 border-b pb-2">
+                        <div className="col-span-2">Produkt</div>
+                        <div className="text-center">Preis</div>
+                        <div className="text-center">Menge</div>
+                        <div className="text-right">Gesamt</div>
+                      </div>
 
-                  <AnimatePresence>
-                    {pkg.products.map((item: PackageProduct) => (
-                      <CartItemWithDetails
-                        key={item.cart_id}
-                        item={item}
-                        onIncrement={handleIncrement}
-                        onDecrement={handleDecrement}
-                        onRemove={handleRemove}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              ))}
+                      {pkg.products.map((item: PackageProduct) => (
+                        <CartItemWithDetails
+                          key={item.cart_id}
+                          item={item}
+                          onIncrement={handleIncrement}
+                          onDecrement={handleDecrement}
+                          onRemove={handleRemove}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -304,42 +364,46 @@ const Cart: React.FC = () => {
                 transition={{ delay: 0.3 }}
                 className="mt-12 flex flex-col md:flex-row justify-between items-center"
               >
-                <div className="text-xl font-bold text-gray-800 mb-4 md:mb-2 space-y-2">
+                <div className="text-xl font-bold text-gray-800 mb-4 md:mb-0 space-y-2">
                   <div>
-                    Zwischensumme: <span className="text-green-600">{subTotal}</span>
+                    Zwischensumme: <span className="text-first">{subTotal}</span>
                   </div>
                   <div>
-                    Gesamt: <span className="text-green-600">{totalPrice}</span>
+                    Gesamt: <span className="text-first">{totalPrice}</span>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <button
                     onClick={() => {
-                      if (window.confirm('Möchten Sie wirklich die gesamte Bestellung stornieren?')) {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to cancel the entire order?"
+                        )
+                      ) {
                         handleCancelOrder();
                       }
                     }}
                     disabled={isConfirmingCancel}
                     className={`px-6 py-3 text-red-600 hover:text-red-700 font-semibold transition-colors ${
-                      isConfirmingCancel ? 'opacity-50 cursor-not-allowed' : ''
+                      isConfirmingCancel ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    {isConfirmingCancel ? 'Wird storniert...' : 'Stornieren'}
+                    {isConfirmingCancel ? "Stornieren..." : "Bestellung stornieren"}
                   </button>
                   <button
                     onClick={handleCheckout}
                     disabled={isProcessing}
-                    className={`inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-semibold transition-all hover:shadow-lg transform hover:-translate-y-1 disabled:transform-none disabled:hover:shadow-none disabled:opacity-75 ${
-                      isProcessing ? 'cursor-not-allowed' : ''
+                    className={`inline-block bg-first hover:bg-first/80 text-white px-8 py-3 rounded-[8px] font-semibold transition-all hover:shadow-lg transform hover:-translate-y-1 disabled:transform-none disabled:hover:shadow-none disabled:opacity-75 ${
+                      isProcessing ? "cursor-not-allowed" : ""
                     }`}
                   >
                     {isProcessing ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Wird verarbeitet...</span>
+                        <div className="w-5 h-5 border-2 rounded-xl border-white border-t-transparent animate-spin"></div>
+                        <span>Verarbeiten...</span>
                       </div>
                     ) : (
-                      'Weiter zur Kasse'
+                      "Zur Kasse"
                     )}
                   </button>
                 </div>

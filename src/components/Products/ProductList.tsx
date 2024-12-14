@@ -67,7 +67,7 @@ const ProductList: React.FC<ProductListProps> = ({
             Ausgewählt: {currentCount} / {requiredCount} Produkte
           </div>
         </div>
-        <div className="mt-4">
+        <div className="flex flex-col gap-4">
           {products.map((product) => (
             <HorizontalMenuCard
               key={product.product_id}

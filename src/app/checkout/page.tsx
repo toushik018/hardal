@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useGetPaymentMethodsQuery, useSetPaymentMethodMutation, useGetCartQuery, useSetShippingMethodMutation } from "@/services/api";
 import { useSetShippingAddressMutation, useSetPaymentAddressMutation } from "@/services/api";
-import Loading from "@/components/Loading";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { CreditCard, Truck, CheckCircle, MapPin } from "lucide-react";
@@ -14,6 +13,7 @@ import ShippingMethodStep from "@/components/Checkout/ShippingMethodStep";
 import ReviewStep from "@/components/Checkout/ReviewStep";
 import ConfirmationStep from "@/components/Checkout/ConfirmationStep";
 import CheckoutSidebar from "@/components/Checkout/CheckoutSidebar";
+import Loading from "@/components/Loading/Loading";
 
 const Checkout: React.FC = () => {
   const { data: paymentData, isLoading: isPaymentLoading, error: paymentError } = useGetPaymentMethodsQuery();

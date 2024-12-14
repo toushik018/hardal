@@ -3,138 +3,158 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FiMinus, FiPlus, FiCheck } from "react-icons/fi";
-import { 
-  useAddToCartMutation, 
+import Link from "next/link";
+import {
+  useAddToCartMutation,
   useEditProductMutation,
   useRemoveProductMutation,
-  useGetCartQuery 
+  useGetCartQuery,
 } from "@/services/api";
 import { Product } from "@/types/product";
+import { FaMinus, FaPlus } from "react-icons/fa";
 
 interface HorizontalMenuCardProps {
   product: Product;
   activeCategoryName: string;
 }
 
-const HorizontalMenuCard = ({ product, activeCategoryName }: HorizontalMenuCardProps) => {
+const HorizontalMenuCard = ({
+  product,
+  activeCategoryName,
+}: HorizontalMenuCardProps) => {
   const [localQuantity, setLocalQuantity] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
-  
-  const { data: cartData } = useGetCartQuery();
+
+  const { data: cartData, refetch: refetchCart } = useGetCartQuery();
   const [addToCart] = useAddToCartMutation();
   const [editProduct] = useEditProductMutation();
   const [removeProduct] = useRemoveProductMutation();
 
-  const cartItem = cartData?.cart?.products?.find(
-    (item: { product_id: string; quantity: string }) => 
-      item.product_id === product.product_id
-  );
-
   useEffect(() => {
-    if (cartItem) {
-      setLocalQuantity(Number(cartItem.quantity));
-    }
-  }, [cartItem]);
-
-  const validateCategoryLimit = () => {
-    const currentCategory = cartData?.cart?.menu?.contents?.find(
-      (content: { name: string; }) => content.name === activeCategoryName
+    const cartItem = cartData?.products?.find(
+      (item: any) => item.product_id === product.product_id
     );
+    setLocalQuantity(cartItem ? Number(cartItem.quantity) : 0);
+  }, [cartData, product.product_id]);
 
-    if (currentCategory && currentCategory.count) {
-      const currentCount = currentCategory.currentCount || 0;
-      if (currentCount >= currentCategory.count) {
-        toast.error(`Maximum ${currentCategory.count} Produkte erlaubt`);
-        return false;
+  const handleQuantityChange = async (newQuantity: number) => {
+    if (newQuantity < 0) return;
+    setIsUpdating(true);
+    const toastId = toast.loading("Warenkorb aktualisieren...");
+    try {
+      const cartItem = cartData?.products?.find(
+        (item: any) => item.product_id === product.product_id
+      );
+      if (newQuantity === 0 && cartItem) {
+        await removeProduct({ id: cartItem.cart_id, quantity: 0 });
+        toast.success("Produkt aus Warenkorb entfernt", { id: toastId });
+      } else if (cartItem) {
+        await editProduct({ id: cartItem.cart_id, quantity: newQuantity });
+        toast.success("Menge aktualisiert", { id: toastId });
+      } else if (newQuantity > 0) {
+        await addToCart({ id: product.product_id, quantity: newQuantity });
+        toast.success("Produkt zum Warenkorb hinzugefügt", { id: toastId });
       }
+      setLocalQuantity(newQuantity);
+    } catch (error) {
+      console.error("Fehler beim Aktualisieren des Warenkorbs", error);
+      toast.error(
+        "Fehler beim Aktualisieren des Warenkorbs. Bitte versuchen Sie es erneut.",
+        { id: toastId }
+      );
+    } finally {
+      setIsUpdating(false);
+      setIsEditing(false);
+      refetchCart();
     }
-    return true;
+  };
+
+  const handleInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newQuantity = parseInt(inputValue);
+    if (!isNaN(newQuantity)) {
+      handleQuantityChange(newQuantity);
+    }
+    setIsEditing(false);
   };
 
   const handleIncrement = async () => {
-    if (!validateCategoryLimit()) return;
-
     setIsUpdating(true);
+    const toastId = toast.loading("Warenkorb aktualisieren...");
     try {
-      if (localQuantity === 0) {
-        await addToCart({
-          id: product.product_id,
-          quantity: 1,
-        }).unwrap();
+      const newQuantity = localQuantity + 1;
+      const cartItem = cartData?.products?.find(
+        (item: any) => item.product_id === product.product_id
+      );
+      if (cartItem) {
+        await editProduct({ id: cartItem.cart_id, quantity: newQuantity });
       } else {
-        await editProduct({
-          id: product.product_id,
-          quantity: localQuantity + 1,
-        }).unwrap();
+        await addToCart({ id: product.product_id, quantity: 1 });
       }
-      setLocalQuantity(prev => prev + 1);
+      setLocalQuantity(newQuantity);
+      toast.success("Produkt zum Warenkorb hinzugefügt", { id: toastId });
+
+      const currentCategory = cartData?.cart?.menu?.contents?.find(
+        (content: any) => content.name === activeCategoryName
+      );
+
+      if (currentCategory) {
+        const requiredCount = currentCategory.count || 0;
+        const currentCount = (currentCategory.currentCount || 0) + 1;
+
+        if (currentCount >= requiredCount) {
+          window.dispatchEvent(
+            new CustomEvent("showExtraProductsModal", {
+              detail: { categoryName: activeCategoryName },
+            })
+          );
+        }
+      }
     } catch (error) {
-      toast.error("Fehler beim Aktualisieren der Menge");
+      console.error("Fehler beim Erhöhen der Menge", error);
+      toast.error(
+        "Fehler beim Aktualisieren des Warenkorbs. Bitte versuchen Sie es erneut.",
+        { id: toastId }
+      );
     } finally {
       setIsUpdating(false);
+      refetchCart();
     }
   };
 
   const handleDecrement = async () => {
-    setIsUpdating(true);
-    try {
-      if (localQuantity <= 1) {
-        await removeProduct({
-          id: product.product_id,
-          quantity: 0,
-        }).unwrap();
-        setLocalQuantity(0);
-      } else {
-        await editProduct({
-          id: product.product_id,
-          quantity: localQuantity - 1,
-        }).unwrap();
-        setLocalQuantity(prev => prev - 1);
+    if (localQuantity > 0) {
+      setIsUpdating(true);
+      const toastId = toast.loading("Warenkorb aktualisieren...");
+      try {
+        const newQuantity = localQuantity - 1;
+        const cartItem = cartData?.products?.find(
+          (item: any) => item.product_id === product.product_id
+        );
+        if (cartItem) {
+          if (newQuantity === 0) {
+            await removeProduct({ id: cartItem.cart_id, quantity: 0 });
+            toast.success("Produkt aus Warenkorb entfernt", { id: toastId });
+          } else {
+            await editProduct({ id: cartItem.cart_id, quantity: newQuantity });
+            toast.success("Menge verringert", { id: toastId });
+          }
+        }
+        setLocalQuantity(newQuantity);
+      } catch (error) {
+        console.error("Fehler beim Verringern der Menge", error);
+        toast.error(
+          "Fehler beim Aktualisieren des Warenkorbs. Bitte versuchen Sie es erneut.",
+          {
+            id: toastId,
+          }
+        );
+      } finally {
+        setIsUpdating(false);
+        refetchCart();
       }
-    } catch (error) {
-      toast.error("Fehler beim Aktualisieren der Menge");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleInputSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const newQuantity = Number(inputValue);
-    
-    if (isNaN(newQuantity) || newQuantity < 0) {
-      setInputValue(localQuantity.toString());
-      setIsEditing(false);
-      return;
-    }
-
-    if (newQuantity > localQuantity && !validateCategoryLimit()) {
-      setInputValue(localQuantity.toString());
-      setIsEditing(false);
-      return;
-    }
-
-    setIsUpdating(true);
-    try {
-      if (newQuantity === 0) {
-        await removeProduct({
-          id: product.product_id,
-          quantity: 0,
-        }).unwrap();
-      } else {
-        await editProduct({
-          id: product.product_id,
-          quantity: newQuantity,
-        }).unwrap();
-      }
-      setLocalQuantity(newQuantity);
-    } catch (error) {
-      toast.error("Fehler beim Aktualisieren der Menge");
-    } finally {
-      setIsUpdating(false);
-      setIsEditing(false);
     }
   };
 
@@ -142,11 +162,17 @@ const HorizontalMenuCard = ({ product, activeCategoryName }: HorizontalMenuCardP
     <div className="flex gap-6 bg-white rounded-2xl p-5 hover:shadow-lg transition-all duration-300 border border-gray-100">
       {/* Image Section */}
       <div className="relative w-[180px] h-[180px] rounded-xl overflow-hidden flex-shrink-0">
-        <img
-          src={product?.thumb || "/images/default-product.jpg"}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        {product.thumb ? (
+          <img
+            src={product.thumb}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-gray-400 text-sm">Kein Bild verfügbar</span>
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
@@ -156,9 +182,14 @@ const HorizontalMenuCard = ({ product, activeCategoryName }: HorizontalMenuCardP
             <h3 className="text-2xl font-semibold text-gray-900">
               {product.name}
             </h3>
-            <span className="px-2 py-1 bg-gray-50 rounded-lg text-sm font-medium text-gray-600">
-              75g
-            </span>
+            <Link
+              href={`/shop/${product.product_id}?menuName=${encodeURIComponent(
+                activeCategoryName
+              )}`}
+              className="text-sm text-first hover:text-first/80 hover:underline"
+            >
+              Einzelheiten
+            </Link>
           </div>
           {product.description && (
             <p className="text-gray-600 text-base max-w-2xl">
@@ -167,32 +198,32 @@ const HorizontalMenuCard = ({ product, activeCategoryName }: HorizontalMenuCardP
           )}
         </div>
 
-        {/* Bottom Section */}
+        {/* Bottom Section with Updated Button Design */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-2xl font-bold text-first">
             {product.price}€
           </div>
 
           <div className="flex items-center gap-4">
             {localQuantity > 0 ? (
-              <div className="flex items-center justify-between bg-green-50 rounded-xl border border-green-100">
+              <div className="flex items-center gap-4">
                 <button
                   onClick={handleDecrement}
-                  className="w-10 h-10 flex items-center justify-center text-green-600 hover:bg-green-100 rounded-l-xl transition-colors"
                   disabled={isUpdating}
+                  className="w-10 h-10 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-first hover:text-first disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:text-gray-400 transition-colors"
                 >
-                  <FiMinus className="w-4 h-4" />
+                  <FaMinus className="size-3.5" />
                 </button>
                 {isEditing ? (
                   <form
                     onSubmit={handleInputSubmit}
-                    className="min-w-[2rem] flex"
+                    className="min-w-[3rem] flex"
                   >
                     <input
                       type="number"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
-                      className="w-12 text-center bg-white border-0 text-sm font-medium text-gray-800 focus:outline-none focus:ring-0"
+                      className="w-12 text-center bg-white border-0 text-xl font-semibold text-gray-800 focus:outline-none focus:ring-0"
                       autoFocus
                       onBlur={() => {
                         if (!inputValue) {
@@ -203,7 +234,7 @@ const HorizontalMenuCard = ({ product, activeCategoryName }: HorizontalMenuCardP
                     />
                     <button
                       type="submit"
-                      className="w-6 flex items-center justify-center text-green-600"
+                      className="w-6 flex items-center justify-center text-first"
                     >
                       <FiCheck className="w-4 h-4" />
                     </button>
@@ -214,24 +245,24 @@ const HorizontalMenuCard = ({ product, activeCategoryName }: HorizontalMenuCardP
                       setIsEditing(true);
                       setInputValue(localQuantity.toString());
                     }}
-                    className="text-sm font-medium text-gray-800 min-w-[2rem] text-center cursor-pointer hover:bg-green-100 py-1"
+                    className="w-12 text-center text-xl font-semibold cursor-pointer"
                   >
                     {localQuantity}
                   </span>
                 )}
                 <button
                   onClick={handleIncrement}
-                  className="w-10 h-10 flex items-center justify-center text-green-600 hover:bg-green-100 rounded-r-xl transition-colors"
                   disabled={isUpdating}
+                  className="w-10 h-10 rounded-xl bg-first/10 flex items-center justify-center text-first hover:bg-first/20 transition-colors"
                 >
-                  <FiPlus className="w-4 h-4" />
+                  <FaPlus className="size-3.5" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={handleIncrement}
-                className="px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
                 disabled={isUpdating}
+                className="px-6 py-2.5 bg-first text-white text-sm font-medium rounded-xl hover:bg-first/80 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
               >
                 Auswählen
               </button>
