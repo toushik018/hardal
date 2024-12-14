@@ -36,13 +36,6 @@ const ProductList: React.FC<ProductListProps> = ({
 }) => {
   const { data: categoriesData } = useGetCategoriesQuery();
 
-  console.log("currentCount", currentCount);
-  console.log("requiredCount", requiredCount);
-  console.log("activeCategoryName", activeCategoryName);
-  console.log("products", products);
-  console.log("menuContents", menuContents);
-  console.log("categoriesData", categoriesData);
-
   if (!products || products.length === 0) {
     return (
       <div className="col-span-full flex justify-center items-center py-12">

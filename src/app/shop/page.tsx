@@ -18,6 +18,7 @@ import ExtraProductsModal from "@/components/Modals/ExtraProductsModal";
 import Loading from "@/components/Loading/Loading";
 import Stepper from "@/components/Stepper/Stepper";
 import { ShopSkeleton } from "@/components/Skeletons";
+import CartSummary from "@/components/Cart/CartSummary";
 
 interface MenuContent {
   name: string;
@@ -400,48 +401,15 @@ const Shop = () => {
           </div>
 
           {/* Right Column - Cart Summary */}
-          <div className="md:w-[650px] w-full sticky top-[90px]">
-            <div className="bg-white rounded-xl shadow-sm">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-6">Bestellübersicht</h2>
-                {/* Cart Summary Content */}
-                <div className="space-y-4">
-                  {/* Required/Selected Count */}
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">
-                      Erforderlich: {currentCategory?.count || 0}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Ausgewählt: {getCurrentCategoryCount()}
-                    </p>
-                  </div>
-
-                  {/* Navigation Buttons */}
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={handlePrevious}
-                      disabled={activeStep === 0}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-first rounded-xl hover:bg-first/10 disabled:opacity-30 transition-colors"
-                    >
-                      <ChevronLeft className="size-4" />
-                      <span className="font-medium">Zurück</span>
-                    </button>
-                    <button
-                      onClick={handleNext}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-first rounded-xl hover:bg-first/90 text-white transition-colors"
-                    >
-                      <span className="font-medium">
-                        {activeStep === menuContents.length - 1
-                          ? "Zur Kasse"
-                          : "Weiter"}
-                      </span>
-                      <ChevronRight className="size-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <CartSummary 
+            cartData={cartData}
+            currentCategory={currentCategory}
+            getCurrentCategoryCount={getCurrentCategoryCount}
+            activeStep={activeStep}
+            menuContents={menuContents}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+          />
         </div>
       </div>
 
