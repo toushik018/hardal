@@ -40,7 +40,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       transition={{ duration: 0.3 }}
     >
       <h2 className="text-2xl font-semibold mb-6 flex items-center">
-        <CheckCircle className="w-6 h-6 mr-2 text-green-500" />
+        <CheckCircle className="w-6 h-6 mr-2 text-first/90" />
         Bestellung überprüfen
       </h2>
       <div className="space-y-6">
@@ -74,7 +74,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
         </button>
         <button
           onClick={onConfirm}
-          className="w-1/2 bg-green-500 text-white py-4 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center justify-center"
+          className="w-1/2 bg-first text-white py-4 rounded-xl font-semibold hover:bg-first/90 transition-colors flex items-center justify-center"
         >
           Bestellung bestätigen
         </button>

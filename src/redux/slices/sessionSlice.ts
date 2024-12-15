@@ -26,7 +26,7 @@ const sessionSlice = createSlice({
     clearToken: (state) => {
       state.apiToken = null;
       state.currency = "€";
-      state.isInitialized = true;
+      state.isInitialized = false;
     },
   },
 });

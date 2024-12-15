@@ -6,8 +6,9 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 interface ProductItemProps {
   product: {
     product_id: number;
-    name?: string;
+    name: string;
     thumb?: string;
+    image?: string;
     price?: string | number;
     quantity: number;
     leadTime?: string;
@@ -15,6 +16,7 @@ interface ProductItemProps {
   onIncrement: () => void;
   onDecrement: () => void;
   onRemove: () => void;
+  isLoading?: boolean;
 }
 
 const ProductItem: React.FC<ProductItemProps> = ({
@@ -22,23 +24,34 @@ const ProductItem: React.FC<ProductItemProps> = ({
   onIncrement,
   onDecrement,
   onRemove,
+  isLoading = false,
 }) => {
+  if (!product || typeof product !== 'object') {
+    console.error('Invalid product data:', product);
+    return null;
+  }
+
   const formatPrice = (price: string | number | undefined): string => {
-    if (typeof price === "number") {
-      return price.toFixed(2);
+    try {
+      if (typeof price === "number") {
+        return price.toFixed(2);
+      }
+      if (typeof price === "string") {
+        const numericPrice = parseFloat(price.replace(/[^0-9.-]+/g, ""));
+        return isNaN(numericPrice) ? "0.00" : numericPrice.toFixed(2);
+      }
+      return "0.00";
+    } catch (error) {
+      console.error('Error formatting price:', error);
+      return "0.00";
     }
-    if (typeof price === "string") {
-      const numericPrice = parseFloat(price.replace(/[^0-9.-]+/g, ""));
-      return isNaN(numericPrice) ? "0.00" : numericPrice.toFixed(2);
-    }
-    return "0.00";
   };
 
   const totalPrice = formatPrice(
     typeof product.price === "number"
-      ? product?.price * product?.quantity
-      : parseFloat((product?.price || "0").replace(/[^0-9.-]+/g, "")) *
-          product?.quantity
+      ? product.price * product.quantity
+      : parseFloat((product.price || "0").replace(/[^0-9.-]+/g, "")) *
+          product.quantity
   );
 
   return (
@@ -48,7 +61,9 @@ const ProductItem: React.FC<ProductItemProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className="grid grid-cols-5 gap-4 items-center py-4 border-b"
+      className={`grid grid-cols-5 gap-4 items-center py-4 border-b ${
+        isLoading ? 'opacity-50 pointer-events-none' : ''
+      }`}
     >
       <div className="col-span-2 flex items-center space-x-4">
         <Image
@@ -72,35 +87,46 @@ const ProductItem: React.FC<ProductItemProps> = ({
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.2 }}
         >
-          {/* <motion.button
+          {/* Increment/Decrement functionality preserved for later use
+          <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={onDecrement}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm text-gray-600 hover:text-gray-800"
+            disabled={isLoading}
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm text-gray-600 hover:text-gray-800 disabled:opacity-50"
           >
-            <Minus size={16} />
-          </motion.button> */}
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Minus size={16} />
+            )}
+          </motion.button>
+          */}
           <div className="w-10 mx-2 text-center font-medium text-gray-800">
             {product?.quantity}
           </div>
-          {/* <motion.button
+          {/* 
+          <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={onIncrement}
             className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm text-gray-600 hover:text-gray-800"
           >
             <Plus size={16} />
-          </motion.button> */}
+          </motion.button>
+          */}
         </motion.div>
       </div>
       <div className="text-right font-semibold text-gray-800 flex items-center justify-end">
         <span className="mr-4">{totalPrice} €</span>
-        {/* <motion.button
+        {/* Delete functionality preserved for later use
+        <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={onRemove}
           className="text-red-500 hover:text-red-600 transition-colors"
         >
           <Trash2 size={20} />
-        </motion.button> */}
+        </motion.button>
+        */}
       </div>
     </motion.div>
   );

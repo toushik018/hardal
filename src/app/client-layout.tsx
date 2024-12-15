@@ -5,6 +5,7 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setToken, clearToken } from "@/redux/slices/sessionSlice";
 import { showLoading, hideLoading } from "@/redux/slices/loadingSlice";
+import Loading from "@/components/Loading/Loading";
 
 const api = axios.create({
   withCredentials: true,
@@ -18,9 +19,8 @@ export default function ClientLayout({
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(showLoading());
-
     const fetchSessionData = async () => {
+      dispatch(showLoading());
       try {
         const res = await api.get("/api/check-session");
         const { sessionData } = res.data;
@@ -41,5 +41,10 @@ export default function ClientLayout({
     fetchSessionData();
   }, [dispatch]);
 
-  return <>{children}</>;
+  return (
+    <>
+      <Loading />
+      {children}
+    </>
+  );
 }

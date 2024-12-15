@@ -41,14 +41,14 @@ const ShippingMethodStep: React.FC<ShippingMethodStepProps> = ({ onSetShippingMe
       transition={{ duration: 0.3 }}
     >
       <h2 className="text-2xl font-semibold mb-6 flex items-center">
-        <Truck className="w-6 h-6 mr-2 text-green-500" />
+        <Truck className="w-6 h-6 mr-2 text-first/90" />
         Liefermethode auswählen
       </h2>
       <div className="space-y-4 mb-8">
         {Object.entries(shippingMethods).map(([key, method]: [string, any]) => (
           <div key={key} className="bg-gray-50 rounded-xl p-6 transition-shadow hover:shadow-md">
             <h3 className="font-semibold text-lg mb-4 flex items-center">
-              <Truck className="w-5 h-5 mr-2 text-green-500" />
+              <Truck className="w-5 h-5 mr-2 text-first/90" />
               {method.name}
             </h3>
             <div className="ml-7 space-y-3">
@@ -60,7 +60,7 @@ const ShippingMethodStep: React.FC<ShippingMethodStepProps> = ({ onSetShippingMe
                     value={quote.code}
                     checked={selectedMethod === quote.code}
                     onChange={() => setSelectedMethod(quote.code)}
-                    className="form-radio text-green-500 focus:ring-green-500 h-5 w-5"
+                    className="form-radio text-first focus:ring-first h-5 w-5"
                   />
                   <span className="text-gray-700">{quote.name}</span>
                   {/* <span className="text-gray-500 ml-auto">{quote.text}</span> */}
@@ -80,7 +80,7 @@ const ShippingMethodStep: React.FC<ShippingMethodStepProps> = ({ onSetShippingMe
         <button
           onClick={handleSubmit}
           disabled={isSubmitting || !selectedMethod}
-          className="w-1/2 bg-green-500 text-white py-4 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center justify-center disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="w-1/2 bg-first text-white py-4 rounded-xl font-semibold hover:bg-first/90 transition-colors flex items-center justify-center disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           {isSubmitting ? <Loader2 className="animate-spin" /> : "Weiter zur Überprüfung"}
         </button>

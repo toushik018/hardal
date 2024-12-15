@@ -10,26 +10,48 @@ const CheckoutSidebar: React.FC<CheckoutSidebarProps> = ({
   totalPrice,
 }) => {
   return (
-    <div className="hidden lg:block lg:w-1/2 xl:w-2/5 bg-green-600 p-12">
+    <div className="hidden lg:block lg:w-1/2 xl:w-2/5 bg-second/70 p-12">
       <div className="h-full flex flex-col justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-white mb-6">Bestellung Zusammenfassung</h2>
-          <div className="bg-green-500 bg-opacity-50 rounded-xl p-6 mb-8">
-            <div className="flex justify-between text-lg text-white mb-4">
+          <h2 className="text-3xl font-bold text-white mb-8">
+            Bestellung Zusammenfassung
+          </h2>
+          
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 mb-8">
+            <div className="flex justify-between text-lg text-white/90 mb-6">
               <span>Gesamte Produkte:</span>
-              <span>{totalItems}</span>
+              <span className="font-medium">{totalItems}</span>
             </div>
-            <div className="flex justify-between text-2xl font-bold text-white">
-              <span>Gesamtpreis:</span>
-              <span>{totalPrice}</span>
+            
+            <div className="pt-6 border-t border-white/10">
+              <div className="flex justify-between text-2xl font-bold text-first">
+                <span>Gesamtpreis:</span>
+                <span>{totalPrice}</span>
+              </div>
             </div>
           </div>
+
+          {/* Order Benefits */}
+          <div className="space-y-4">
+            {[
+              { text: "Sichere Bezahlung", icon: "🔒" },
+              { text: "Schnelle Lieferung", icon: "🚚" },
+              { text: "24/7 Support", icon: "💬" },
+            ].map((benefit, index) => (
+              <div key={index} className="flex items-center text-white/80">
+                <span className="mr-3 text-xl">{benefit.icon}</span>
+                <span className="text-sm">{benefit.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        {/* <div className="text-white text-opacity-80">
-          <p className="mb-2">Need help? Contact us:</p>
-          <p className="font-semibold">support@example.com</p>
-          <p className="font-semibold">+1 (555) 123-4567</p>
-        </div> */}
+
+        <div className="text-white/70">
+          <p className="text-sm">
+            Haben Sie Fragen? Kontaktieren Sie uns:
+          </p>
+          <p className="font-semibold text-white mt-2">+49 408 470 82</p>
+        </div>
       </div>
     </div>
   );

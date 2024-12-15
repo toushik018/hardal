@@ -7,7 +7,7 @@ const Section5 = () => {
     <section id="references-section" className="relative py-32">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[#FFFAF5] -z-20" />
-      <div className="absolute inset-0 bg-[url('/pattern.png')] opacity-5" />
+      <div className="absolute inset-0 opacity-5" />
 
       <div className="container mx-auto px-4">
         {/* Header Section */}
@@ -16,7 +16,7 @@ const Section5 = () => {
             Was Kunden sagen
           </span>
           <div className="relative">
-            <h2 className="text-[3.5rem] md:text-[4.5rem] font-bold leading-[1.1]">
+            <h2 className="text-3xl md:text-5xl font-bold leading-tight">
               <span className="text-gray-900">Exquisites Catering,</span>
               <br />
               <span className="text-first relative">unvergessliche</span>

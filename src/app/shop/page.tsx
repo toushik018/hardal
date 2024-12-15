@@ -53,11 +53,71 @@ const Shop = () => {
     refetchOnMountOrArgChange: true,
   });
 
-  const { data: menuContentData, isLoading: isMenuContentLoading } =
-    useGetMenuContentQuery(Number(menuId));
+  const {
+    data: menuContentData,
+    isLoading: isMenuContentLoading,
+    error: menuContentError,
+  } = useGetMenuContentQuery(Number(menuId), {
+    skip: !menuId || isNaN(Number(menuId)),
+  });
 
-  const currentCategory = menuContentData?.contents[activeStep];
-  const menuContents = menuContentData?.contents || [];
+  const menuContents = useMemo(() => {
+    if (
+      !menuContentData?.contents ||
+      !Array.isArray(menuContentData.contents)
+    ) {
+      return [];
+    }
+    return menuContentData.contents;
+  }, [menuContentData]);
+
+  const currentCategory = useMemo(() => {
+    if (
+      !menuContents.length ||
+      activeStep < 0 ||
+      activeStep >= menuContents.length
+    ) {
+      return null;
+    }
+    return menuContents[activeStep];
+  }, [menuContents, activeStep]);
+
+  useEffect(() => {
+    if (!menuId) {
+      setError("Menü ID fehlt. Bitte wählen Sie ein Menü aus.");
+      router.push("/");
+      return;
+    }
+
+    if (menuContentError) {
+      setError(
+        "Fehler beim Laden des Menüs. Bitte versuchen Sie es später erneut."
+      );
+      return;
+    }
+
+    if (menuContents.length === 0 && !isMenuContentLoading) {
+      setError("Keine Menüinhalte gefunden.");
+      return;
+    }
+
+    setError(null);
+  }, [
+    menuId,
+    menuContentError,
+    menuContents.length,
+    isMenuContentLoading,
+    router,
+  ]);
+
+  useEffect(() => {
+    if (
+      menuContents.length > 0 &&
+      (activeStep < 0 || activeStep >= menuContents.length)
+    ) {
+      setActiveStep(0);
+    }
+  }, [menuContents.length, activeStep]);
 
   const [addPackage] = useAddPackageMutation();
 
@@ -152,7 +212,6 @@ const Shop = () => {
 
     fetchProducts();
   }, [currentCategory?.ids]);
-  console.log(currentCategory);
   useEffect(() => {
     if (currentCategory && !categoryStates[currentCategory.name]) {
       setCategoryStates((prev) => ({
@@ -328,7 +387,6 @@ const Shop = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading state for smoother transition
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
@@ -339,14 +397,66 @@ const Shop = () => {
   const guestCount = searchParams.get("guests");
 
   useEffect(() => {
-    // Redirect if no guest count
     if (!guestCount) {
       router.push("/");
     }
   }, [guestCount, router]);
 
+  const [error, setError] = useState<string | null>(null);
+
+  const [currentProductId, setCurrentProductId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleShowModal = (event: CustomEvent) => {
+      const { productId } = event.detail;
+      setCurrentProductId(productId);
+      setShowExtraProductsModal(true);
+    };
+
+    window.addEventListener(
+      "showExtraProductsModal",
+      handleShowModal as EventListener
+    );
+    return () =>
+      window.removeEventListener(
+        "showExtraProductsModal",
+        handleShowModal as EventListener
+      );
+  }, []);
+
   if (isCartLoading || isMenuContentLoading || isLoadingProducts || isLoading) {
     return <ShopSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md mx-4">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Oops! Ein Fehler ist aufgetreten
+          </h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => router.push("/")}
+            className="px-6 py-3 bg-first text-second rounded-xl font-medium
+                     hover:bg-first/90 transition-all duration-200"
+          >
+            Zurück zur Startseite
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Add safety check before rendering main content
+  if (!currentCategory || !menuContents.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <p className="text-gray-600">Keine Menüinhalte verfügbar.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -359,10 +469,10 @@ const Shop = () => {
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {currentCategory?.name}
+                  {currentCategory?.name || "Menü"}
                 </h1>
                 <span className="text-sm text-gray-500">
-                  {currentCategory?.count} Auswahl inklusive im Paket
+                  {currentCategory?.count || 0} Auswahl inklusive im Paket
                 </span>
               </div>
             </div>
@@ -398,7 +508,7 @@ const Shop = () => {
           </div>
 
           {/* Right Column - Cart Summary */}
-          <CartSummary 
+          <CartSummary
             cartData={cartData}
             currentCategory={currentCategory}
             getCurrentCategoryCount={getCurrentCategoryCount}
@@ -413,8 +523,12 @@ const Shop = () => {
       {/* Keep your existing modal */}
       <ExtraProductsModal
         isOpen={showExtraProductsModal}
-        onClose={() => setShowExtraProductsModal(false)}
+        onClose={() => {
+          setShowExtraProductsModal(false);
+          setCurrentProductId(null);
+        }}
         onNext={handleModalNext}
+        currentProductId={currentProductId}
       />
     </div>
   );

@@ -60,7 +60,7 @@ const PaymentAddressStep: React.FC<PaymentAddressStepProps> = ({ onSetPaymentAdd
       className="space-y-6"
     >
       <h2 className="text-2xl font-semibold mb-6 flex items-center">
-        <MapPin className="w-6 h-6 mr-2 text-green-500" />
+        <MapPin className="w-6 h-6 mr-2 text-first/90" />
         Rechnungsadresse setzen
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -74,7 +74,7 @@ const PaymentAddressStep: React.FC<PaymentAddressStepProps> = ({ onSetPaymentAdd
                 {...field}
                 type="text"
                 placeholder="Vorname"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-first focus:border-transparent"
               />
             )}
           />
@@ -90,7 +90,7 @@ const PaymentAddressStep: React.FC<PaymentAddressStepProps> = ({ onSetPaymentAdd
                 {...field}
                 type="text"
                 placeholder="Nachname"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-first focus:border-transparent"
               />
             )}
           />
@@ -107,7 +107,7 @@ const PaymentAddressStep: React.FC<PaymentAddressStepProps> = ({ onSetPaymentAdd
               {...field}
               type="text"
               placeholder="Adresse"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-first focus:border-transparent"
             />
           )}
         />
@@ -123,7 +123,7 @@ const PaymentAddressStep: React.FC<PaymentAddressStepProps> = ({ onSetPaymentAdd
               {...field}
               type="text"
               placeholder="Stadt"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-first focus:border-transparent"
             />
           )}
         />
@@ -138,7 +138,7 @@ const PaymentAddressStep: React.FC<PaymentAddressStepProps> = ({ onSetPaymentAdd
             render={({ field }) => (
               <select
                 {...field}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-first focus:border-transparent"
               >
                 <option value="">Land auswählen</option>
                 {countries.map((country) => (
@@ -159,7 +159,7 @@ const PaymentAddressStep: React.FC<PaymentAddressStepProps> = ({ onSetPaymentAdd
             render={({ field }) => (
               <select
                 {...field}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-first focus:border-transparent"
               >
                 <option value="">Bundesland auswählen</option>
                 {zones.map((zone) => (
@@ -194,7 +194,7 @@ const PaymentAddressStep: React.FC<PaymentAddressStepProps> = ({ onSetPaymentAdd
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-1/2 bg-green-500 text-white py-4 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center justify-center disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="w-1/2 bg-first text-white py-4 rounded-xl font-semibold hover:bg-first/90 transition-colors flex items-center justify-center disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           {isSubmitting ? <Loader2 className="animate-spin" /> : "Bestellung überprüfen"}
         </button>

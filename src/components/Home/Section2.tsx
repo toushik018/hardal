@@ -10,6 +10,7 @@ import { showLoading, hideLoading } from "@/redux/slices/loadingSlice";
 import { useEffect, useState } from "react";
 import GuestsCountModal from "@/components/Modals/GuestsCountModal";
 import { Package } from "@/types/package";
+import { clearToken } from "@/redux/slices/sessionSlice";
 
 // Separate Skeleton component
 const SkeletonCard = () => (
@@ -49,11 +50,21 @@ const Section2 = () => {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showGuestsModal, setShowGuestsModal] = useState(false);
 
+  const handleRetry = () => {
+    // Clear the token
+    dispatch(clearToken());
+    // Delete session cookie
+    document.cookie =
+      "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    // Reload the page to get new session
+    window.location.reload();
+  };
+
   return (
     <section id="menu-section" className="relative py-32 bg-[#FAFAFA]">
-      <div className="absolute inset-0 bg-[url('/patterns/dot-pattern.png')] opacity-5" />
+      <div className="absolute inset-0 opacity-5 -z-10" />
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 relative z-20">
         {/* Header Section - Always visible */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -78,7 +89,7 @@ const Section2 = () => {
         </motion.div>
 
         {/* Content Section */}
-        <div className="min-h-[600px]">
+        <div className="min-h-[600px] relative z-20">
           {isLoading ? (
             // Simple skeleton with fixed count
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
@@ -95,14 +106,20 @@ const Section2 = () => {
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 Fehler beim Laden der Menüs
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-500 mb-6">
                 Bitte versuchen Sie es später erneut
               </p>
+              <button
+                onClick={handleRetry}
+                className="px-6 py-2 bg-first text-black rounded-lg hover:bg-first/90 transition-colors"
+              >
+                Neu laden
+              </button>
             </motion.div>
           ) : (
             <>
               {/* Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto relative z-20">
                 {products.map((item: Package, idx: number) => (
                   <motion.div
                     key={idx}
@@ -114,7 +131,7 @@ const Section2 = () => {
                       setSelectedPackage(item);
                       setShowGuestsModal(true);
                     }}
-                    className="cursor-pointer"
+                    className="cursor-pointer relative z-20"
                   >
                     <VerticalCard
                       packageData={item}
@@ -143,14 +160,16 @@ const Section2 = () => {
       </div>
 
       {selectedPackage && (
-        <GuestsCountModal
-          isOpen={showGuestsModal}
-          onClose={() => {
-            setShowGuestsModal(false);
-            setSelectedPackage(null);
-          }}
-          packageData={selectedPackage}
-        />
+        <div className="relative z-50">
+          <GuestsCountModal
+            isOpen={showGuestsModal}
+            onClose={() => {
+              setShowGuestsModal(false);
+              setSelectedPackage(null);
+            }}
+            packageData={selectedPackage}
+          />
+        </div>
       )}
     </section>
   );

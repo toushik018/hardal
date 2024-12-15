@@ -171,20 +171,30 @@ export const api = createApi({
                 password: string;
                 company?: string;
                 department?: string;
-            }
-        >({
-            query: (credentials) => ({
-                url: 'register',
-                method: 'POST',
-                body: credentials,
+            }>
+            ({
+                query: (credentials) => ({
+                    url: 'register',
+                    method: 'POST',
+                    body: credentials,
+                }),
             }),
-        }),
         forgotPassword: builder.mutation<any, { email: string }>({
             query: (data) => ({
                 url: 'forgot-password',
                 method: 'POST',
                 body: data,
             }),
+        }),
+        addExtra: builder.mutation<any, { product_id: string }>({
+            query: (body) => ({
+                url: 'add-extra',
+                method: 'POST',
+                body: {
+                    product_id: body.product_id.toString()
+                }
+            }),
+            invalidatesTags: ['Cart'],
         }),
     }),
 });
@@ -211,4 +221,5 @@ export const {
     useLoginMutation,
     useRegisterMutation,
     useForgotPasswordMutation,
+    useAddExtraMutation,
 } = api;

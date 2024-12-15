@@ -93,79 +93,94 @@ const Checkout: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 mt-10">
+    <div className="min-h-screen bg-third py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-xl overflow-hidden"
+          className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100"
         >
           <div className="lg:flex">
-            <div className="lg:w-1/2 xl:w-3/5 bg-gray-100 p-8 lg:p-12">
-              <h1 className="text-3xl font-bold mb-8 text-gray-800">Kasse</h1>
+            <div className="lg:w-1/2 xl:w-3/5 p-8 lg:p-12">
+              <h1 className="text-3xl font-bold mb-8 text-second">Checkout</h1>
               
-              {/* Progress Bar */}
+              {/* Progress Steps */}
               <div className="mb-12">
-                <div className="flex justify-between mb-2">
+                <div className="flex justify-between mb-4">
                   {steps.map((s, index) => (
                     <div key={index} className="flex flex-col items-center">
-                      <div className={`rounded-full p-2 ${step > index ? 'bg-green-500 ' : 'bg-gray-200'} mb-2`}>
+                      <div 
+                        className={`rounded-full p-3 ${
+                          step > index 
+                            ? 'bg-first text-second' 
+                            : step === index 
+                              ? 'bg-second text-white' 
+                              : 'bg-gray-100 text-gray-400'
+                        } mb-3 transition-all duration-300`}
+                      >
                         {s.icon}
                       </div>
-                      <span className="text-sm font-medium">{s.title}</span>
+                      <span className={`text-sm font-medium ${
+                        step >= index ? 'text-second' : 'text-gray-400'
+                      } text-center max-w-[100px]`}>
+                        {s.title}
+                      </span>
                     </div>
                   ))}
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="w-full bg-gray-100 rounded-full h-1">
                   <div 
-                    className="bg-green-500 h-2.5 rounded-full transition-all duration-500 ease-out" 
+                    className="bg-first h-1 rounded-full transition-all duration-500 ease-out" 
                     style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}
-                  ></div>
+                  />
                 </div>
               </div>
 
-              <AnimatePresence mode="wait">
-                {step === 1 && (
-                  <PaymentMethodStep
-                    paymentMethods={paymentMethods}
-                    onSetPaymentMethod={handleSetPaymentMethod}
-                  />
-                )}
+              {/* Steps Container */}
+              <div className="bg-white rounded-2xl">
+                <AnimatePresence mode="wait">
+                  {step === 1 && (
+                    <PaymentMethodStep
+                      paymentMethods={paymentMethods}
+                      onSetPaymentMethod={handleSetPaymentMethod}
+                    />
+                  )}
 
-                {step === 2 && (
-                  <ShippingAddressStep
-                    onSetShippingAddress={handleSetShippingAddress}
-                    onBack={() => setStep(1)}
-                  />
-                )}
+                  {step === 2 && (
+                    <ShippingAddressStep
+                      onSetShippingAddress={handleSetShippingAddress}
+                      onBack={() => setStep(1)}
+                    />
+                  )}
 
-                {step === 3 && (
-                  <PaymentAddressStep
-                    onSetPaymentAddress={handleSetPaymentAddress}
-                    onBack={() => setStep(2)}
-                  />
-                )}
+                  {step === 3 && (
+                    <PaymentAddressStep
+                      onSetPaymentAddress={handleSetPaymentAddress}
+                      onBack={() => setStep(2)}
+                    />
+                  )}
 
-                {step === 4 && (
-                  <ShippingMethodStep
-                    onSetShippingMethod={handleSetShippingMethod}
-                    onBack={() => setStep(3)}
-                  />
-                )}
+                  {step === 4 && (
+                    <ShippingMethodStep
+                      onSetShippingMethod={handleSetShippingMethod}
+                      onBack={() => setStep(3)}
+                    />
+                  )}
 
-                {step === 5 && (
-                  <ReviewStep
-                    checkoutData={checkoutData}
-                    onBack={() => setStep(4)}
-                    onConfirm={() => setStep(6)}
-                  />
-                )}
+                  {step === 5 && (
+                    <ReviewStep
+                      checkoutData={checkoutData}
+                      onBack={() => setStep(4)}
+                      onConfirm={() => setStep(6)}
+                    />
+                  )}
 
-                {step === 6 && (
-                  <ConfirmationStep />
-                )}
-              </AnimatePresence>
+                  {step === 6 && (
+                    <ConfirmationStep />
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             <CheckoutSidebar totalItems={totalItems} totalPrice={totalPrice} />
