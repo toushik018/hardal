@@ -197,7 +197,7 @@ const HorizontalMenuCard = ({
 
         {/* Bottom Section with Updated Button Design */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <div className="text-2xl font-bold text-first">{product.price}€</div>
+          <div className="text-2xl font-bold text-first">{product.price}</div>
 
           <div className="flex items-center gap-4">
             {localQuantity > 0 ? (
