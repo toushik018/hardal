@@ -16,13 +16,11 @@ import { FaMinus, FaPlus } from "react-icons/fa";
 interface HorizontalMenuCardProps {
   product: Product;
   activeCategoryName: string;
-  onProductSelect?: (productId: string) => void;
 }
 
 const HorizontalMenuCard = ({
   product,
   activeCategoryName,
-  onProductSelect,
 }: HorizontalMenuCardProps) => {
   const [localQuantity, setLocalQuantity] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
@@ -90,7 +88,6 @@ const HorizontalMenuCard = ({
       const cartItem = cartData?.products?.find(
         (item: any) => item.product_id === product.product_id
       );
-
       if (cartItem) {
         await editProduct({ id: cartItem.cart_id, quantity: newQuantity });
       } else {
@@ -110,10 +107,7 @@ const HorizontalMenuCard = ({
         if (currentCount >= requiredCount) {
           window.dispatchEvent(
             new CustomEvent("showExtraProductsModal", {
-              detail: {
-                categoryName: activeCategoryName,
-                productId: product.product_id,
-              },
+              detail: { categoryName: activeCategoryName },
             })
           );
         }
@@ -206,7 +200,9 @@ const HorizontalMenuCard = ({
 
         {/* Bottom Section with Updated Button Design */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <div className="text-2xl font-bold text-first">{product.price}€</div>
+          <div className="text-2xl font-bold text-first">
+            {product.price}€
+          </div>
 
           <div className="flex items-center gap-4">
             {localQuantity > 0 ? (

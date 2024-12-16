@@ -25,7 +25,6 @@ interface ProductListProps {
   activeCategoryName?: string;
   currentCount: number;
   requiredCount: number;
-  onProductSelect?: (productId: string) => void;
 }
 
 const ProductList: React.FC<ProductListProps> = ({
@@ -34,13 +33,8 @@ const ProductList: React.FC<ProductListProps> = ({
   activeCategoryName,
   currentCount,
   requiredCount,
-  onProductSelect,
 }) => {
   const { data: categoriesData } = useGetCategoriesQuery();
-
-  const handleProductSelect = (productId: string) => {
-    onProductSelect?.(productId);
-  };
 
   if (!products || products.length === 0) {
     return (
@@ -74,7 +68,6 @@ const ProductList: React.FC<ProductListProps> = ({
               activeCategoryName={
                 activeCategoryName || menuContents[0]?.name || ""
               }
-              onProductSelect={handleProductSelect}
             />
           ))}
         </div>
@@ -119,7 +112,6 @@ const ProductList: React.FC<ProductListProps> = ({
                     activeCategoryName={
                       activeCategoryName || menuContents[0]?.name || ""
                     }
-                    onProductSelect={handleProductSelect}
                   />
                 ))}
               </div>

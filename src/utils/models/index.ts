@@ -9,8 +9,6 @@ export { type ILocalStepData } from "./ILocalStepData.model";
 export { type ITotal } from "./ITotal.model";
 export { type IShoppingCardModel } from "./IShoppingCard.model";
 export { type IShoppingCartProduct } from "./IShoppingCartProduct.model";
-export { type IAddressModel } from "./IAddress.model";
-export { type IAddressSliceRedux } from "./IAddressSlice.model";
 export { type IShippingMethodsModel } from "./IShippingMethods.model";
 export { type ShippingMethods } from "./IShippingMethods.model";
 export { type ShippingMethodsFlat } from "./IShippingMethods.model";
