@@ -18,12 +18,14 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 import { api } from '@/services/api';
 import sessionReducer from '../slices/sessionSlice';
 import loadingReducer from '../slices/loadingSlice';
+import extraReducer from '../slices/extraSlice';
 
 export const store = configureStore({
     reducer: {
         [api.reducerPath]: api.reducer,
         session: sessionReducer,
         loading: loadingReducer,
+        extra: extraReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(api.middleware),

@@ -12,6 +12,9 @@ import {
 } from "@/services/api";
 import { Product } from "@/types/product";
 import { FaMinus, FaPlus } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { setSelectedProduct, showExtraModal, clearSelectedProduct } from "@/redux/slices/extraSlice";
+import { useAddExtraMutation } from "@/services/api";
 
 interface HorizontalMenuCardProps {
   product: Product;
@@ -31,6 +34,8 @@ const HorizontalMenuCard = ({
   const [addToCart] = useAddToCartMutation();
   const [editProduct] = useEditProductMutation();
   const [removeProduct] = useRemoveProductMutation();
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const cartItem = cartData?.products?.find(
@@ -83,41 +88,33 @@ const HorizontalMenuCard = ({
   const handleIncrement = async () => {
     setIsUpdating(true);
     const toastId = toast.loading("Warenkorb aktualisieren...");
+
     try {
+      dispatch(setSelectedProduct({
+        id: product.product_id,
+        categoryName: activeCategoryName
+      }));
+
       const newQuantity = localQuantity + 1;
       const cartItem = cartData?.products?.find(
         (item: any) => item.product_id === product.product_id
       );
+
       if (cartItem) {
         await editProduct({ id: cartItem.cart_id, quantity: newQuantity });
       } else {
         await addToCart({ id: product.product_id, quantity: 1 });
       }
+
       setLocalQuantity(newQuantity);
       toast.success("Produkt zum Warenkorb hinzugefügt", { id: toastId });
-
-      const currentCategory = cartData?.cart?.menu?.contents?.find(
-        (content: any) => content.name === activeCategoryName
-      );
-
-      if (currentCategory) {
-        const requiredCount = currentCategory.count || 0;
-        const currentCount = (currentCategory.currentCount || 0) + 1;
-
-        if (currentCount >= requiredCount) {
-          window.dispatchEvent(
-            new CustomEvent("showExtraProductsModal", {
-              detail: { categoryName: activeCategoryName },
-            })
-          );
-        }
-      }
     } catch (error) {
       console.error("Fehler beim Erhöhen der Menge", error);
       toast.error(
         "Fehler beim Aktualisieren des Warenkorbs. Bitte versuchen Sie es erneut.",
         { id: toastId }
       );
+      dispatch(clearSelectedProduct());
     } finally {
       setIsUpdating(false);
       refetchCart();
@@ -200,9 +197,7 @@ const HorizontalMenuCard = ({
 
         {/* Bottom Section with Updated Button Design */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <div className="text-2xl font-bold text-first">
-            {product.price}€
-          </div>
+          <div className="text-2xl font-bold text-first">{product.price}€</div>
 
           <div className="flex items-center gap-4">
             {localQuantity > 0 ? (

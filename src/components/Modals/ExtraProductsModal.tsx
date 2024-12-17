@@ -2,27 +2,64 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, ArrowRight, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+import { useAddExtraMutation } from '@/services/api';
+import { 
+  selectSelectedProduct, 
+  selectIsAddingExtra,
+  setIsAddingExtra,
+  setError,
+  clearSelectedProduct,
+  selectShowModal,
+  hideExtraModal
+} from '@/redux/slices/extraSlice';
+import { toast } from 'sonner';
 
 interface ExtraProductsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   onNext: () => void;
 }
 
-const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({
-  isOpen,
-  onClose,
-  onNext,
-}) => {
-  const [isMounted, setIsMounted] = useState(false);
+const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({ onNext }) => {
+  const dispatch = useDispatch();
+  const selectedProduct = useSelector(selectSelectedProduct);
+  const isAddingExtra = useSelector(selectIsAddingExtra);
+  const [addExtra] = useAddExtraMutation();
+  const isOpen = useSelector(selectShowModal);
 
-  useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
+  const handleAddExtra = async () => {
+    if (!selectedProduct.id) {
+      toast.error("Kein Produkt ausgewählt");
+      return;
+    }
 
-  if (!isMounted) return null;
+    dispatch(setIsAddingExtra(true));
+    try {
+      const response = await addExtra({
+        product_id: selectedProduct.id
+      }).unwrap();
+
+      if (response.success) {
+        toast.success("Extra erfolgreich hinzugefügt");
+        dispatch(clearSelectedProduct());
+        dispatch(hideExtraModal());
+      }
+    } catch (error) {
+      console.error("Error adding extra:", error);
+      dispatch(setError("Fehler beim Hinzufügen des Extras"));
+      toast.error("Fehler beim Hinzufügen des Extras");
+    } finally {
+      dispatch(setIsAddingExtra(false));
+    }
+  };
+
+  const handleClose = () => {
+    dispatch(hideExtraModal());
+  };
+
+  const handleNext = () => {
+    dispatch(hideExtraModal());
+    onNext();
+  };
 
   return (
     <AnimatePresence mode="wait">
@@ -33,7 +70,7 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4"
-          onClick={onClose}
+          onClick={handleClose}
         >
           <motion.div
             key="modal-content"
@@ -48,7 +85,7 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={onClose}
+              onClick={handleClose}
               className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
               aria-label="Close modal"
             >
@@ -86,17 +123,18 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={onClose}
+                  onClick={handleAddExtra}
+                  disabled={isAddingExtra}
                   className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl 
                            font-medium text-gray-700 hover:bg-gray-50 
-                           transition-colors duration-200"
+                           transition-colors duration-200 disabled:opacity-50"
                 >
-                  Weitere Produkte
+                  {isAddingExtra ? "Wird hinzugefügt..." : "Weitere hinzufügen"}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={onNext}
+                  onClick={handleNext}
                   className="flex-1 px-6 py-3 bg-first rounded-xl font-medium 
                            text-gray-900 hover:bg-first/90 transition-colors 
                            duration-200 flex items-center justify-center gap-2"

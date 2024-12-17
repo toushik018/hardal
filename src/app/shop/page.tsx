@@ -16,6 +16,8 @@ import ExtraProductsModal from "@/components/Modals/ExtraProductsModal";
 import Stepper from "@/components/Stepper/Stepper";
 import { ShopSkeleton } from "@/components/Skeletons";
 import CartSummary from "@/components/Cart/CartSummary";
+import { useDispatch, useSelector } from "react-redux";
+import { clearSelectedProduct, selectShowModal, hideExtraModal, showExtraModal } from "@/redux/slices/extraSlice";
 
 interface MenuContent {
   name: string;
@@ -31,7 +33,8 @@ const Shop = () => {
   const searchParams = useSearchParams();
   const menuId = searchParams.get("menu");
   const router = useRouter();
-  const [showExtraProductsModal, setShowExtraProductsModal] = useState(false);
+  const dispatch = useDispatch();
+  const showExtraProductsModal = useSelector(selectShowModal);
   const [categoryStates, setCategoryStates] = useState<{
     [key: string]: {
       hasShownModal: boolean;
@@ -243,13 +246,13 @@ const Shop = () => {
           },
         }));
       }
-      // Show modal when conditions are met
+      // Show modal ONLY when conditions are met AND hasn't been shown yet
       else if (
         currentCount >= requiredCount &&
         !categoryState.hasShownModal &&
         currentCount > categoryState.lastCount
       ) {
-        setShowExtraProductsModal(true);
+        dispatch(showExtraModal());
         setCategoryStates((prev) => ({
           ...prev,
           [categoryName]: {
@@ -258,7 +261,7 @@ const Shop = () => {
           },
         }));
       }
-      // Update last count
+      // Just update last count without showing modal
       else if (currentCount !== categoryState.lastCount) {
         setCategoryStates((prev) => ({
           ...prev,
@@ -270,10 +273,6 @@ const Shop = () => {
       }
     }
   }, [currentCategory?.name, currentCount]);
-
-  useEffect(() => {
-    setShowExtraProductsModal(false);
-  }, [activeStep]);
 
   useEffect(() => {
     return () => {
@@ -343,7 +342,6 @@ const Shop = () => {
       return;
     }
 
-    setShowExtraProductsModal(false);
     if (activeStep < menuContents.length - 1) {
       setActiveStep((prevStep) => prevStep + 1);
     } else {
@@ -478,11 +476,7 @@ const Shop = () => {
       </div>
 
       {/* Keep your existing modal */}
-      <ExtraProductsModal
-        isOpen={showExtraProductsModal}
-        onClose={() => setShowExtraProductsModal(false)}
-        onNext={handleModalNext}
-      />
+      <ExtraProductsModal onNext={handleModalNext} />
     </div>
   );
 };
