@@ -1,6 +1,9 @@
-import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import { ChevronLeft, ChevronRight, Loader2, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRemoveProductMutation } from "@/services/api";
+import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CartSummaryProps {
   cartData: any;
@@ -24,92 +27,86 @@ const CartSummary: React.FC<CartSummaryProps> = ({
   onPrevious,
   onNext,
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [removeProduct] = useRemoveProductMutation();
 
-    
-  // Group products by their categories for better organization
-//   const groupedProducts = menuContents
-//     .slice(0, activeStep + 1)
-//     .map((category) => ({
-//       name: category.name,
-//       count: category.count,
-//       currentCount:
-//         cartData?.cart?.menu?.contents?.find(
-//           (c: any) => c.name === category.name
-//         )?.currentCount || 0,
-//     }));
+  const handleNext = async () => {
+    setIsLoading(true);
+    try {
+      await onNext();
+    } catch (error) {
+      console.error('Navigation error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveProduct = async (cartId: string) => {
+    setRemovingId(cartId);
+    try {
+      await removeProduct({ id: cartId, quantity: 0 });
+      toast.success("Produkt entfernt");
+    } catch (error) {
+      console.error("Error removing product:", error);
+      toast.error("Fehler beim Entfernen des Produkts");
+    } finally {
+      setRemovingId(null);
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="md:w-[650px] w-full sticky top-[90px]"
+      className="md:w-[650px] w-full sticky top-[150px]"
     >
       <div className="bg-white rounded-xl shadow-sm">
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-6">Bestellübersicht</h2>
-
-          {/* Categories Progress */}
-          {/* <div className="mb-6 space-y-4">
-            <AnimatePresence mode="wait">
-              {groupedProducts.map((category) => (
-                <motion.div
-                  key={category.name}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="border-b border-gray-100 last:border-0 pb-4 last:pb-0"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-[15px] font-medium text-gray-800">
-                      {category.name}
-                    </h3>
-                    <span
-                      className={`text-sm font-medium ${
-                        category.currentCount >= category.count
-                          ? "text-green-600"
-                          : "text-gray-600"
-                      }`}
-                    >
-                      {category.currentCount}/{category.count}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div> */}
-
-          {/* Selected Products List */}
-          <div className="space-y-3 mb-6">
-            <AnimatePresence mode="popLayout">
-              {cartData?.products?.map((product: any) => (
-                <motion.div
-                  key={product.cart_id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="flex justify-between items-start p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">
-                      {product.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm text-gray-600">
-                        × {product.quantity}
-                      </span>
-                      {product.price !== "0.00€" && (
+          <ScrollArea className="h-[300px] lg:h-[400px] mb-6">
+            <div className="space-y-3 pr-4">
+              <AnimatePresence mode="popLayout">
+                {cartData?.products?.map((product: any) => (
+                  <motion.div
+                    key={product.cart_id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    className="flex justify-between items-start p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">
+                        {product.name}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
                         <span className="text-sm text-gray-600">
-                          {product.price}
+                          × {product.quantity}
                         </span>
-                      )}
+                        {product.price !== "0.00€" && (
+                          <span className="text-sm text-gray-600">
+                            {product.price}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+                    <button
+                      onClick={() => handleRemoveProduct(product.cart_id)}
+                      disabled={removingId === product.cart_id}
+                      className="p-2 hover:bg-red-100 rounded-lg transition-all duration-200"
+                    >
+                      {removingId === product.cart_id ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+                      ) : (
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      )}
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </ScrollArea>
 
-          {/* Price Summary */}
           <div className="border-t pt-4 mb-6">
             {cartData?.totals?.map((total: any, index: number) => (
               <div
@@ -140,26 +137,35 @@ const CartSummary: React.FC<CartSummaryProps> = ({
             ))}
           </div>
 
-          {/* Navigation Buttons */}
           <div className="flex gap-3">
             <button
               onClick={onPrevious}
-              disabled={activeStep === 0}
+              disabled={activeStep === 0 || isLoading}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
               <span>Zurück</span>
             </button>
             <button
-              onClick={onNext}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-yellow-400 rounded-xl text-gray-900 font-medium hover:bg-yellow-500 transition-colors"
+              onClick={handleNext}
+              disabled={isLoading}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-yellow-400 rounded-xl text-gray-900 font-medium hover:bg-yellow-500 transition-colors disabled:opacity-70 disabled:hover:bg-yellow-400"
             >
-              <span>
-                {activeStep === menuContents.length - 1
-                  ? "Zur Kasse"
-                  : "Weiter"}
-              </span>
-              <ChevronRight className="w-5 h-5" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Wird geladen...</span>
+                </>
+              ) : (
+                <>
+                  <span>
+                    {activeStep === menuContents.length - 1
+                      ? "Zur Kasse"
+                      : "Weiter"}
+                  </span>
+                  <ChevronRight className="w-5 h-5" />
+                </>
+              )}
             </button>
           </div>
         </div>

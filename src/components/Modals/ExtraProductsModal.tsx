@@ -11,7 +11,8 @@ import {
   setError,
   clearSelectedProduct,
   selectShowModal,
-  hideExtraModal
+  hideExtraModal,
+  setExtraMode
 } from '@/redux/slices/extraSlice';
 import { toast } from 'sonner';
 
@@ -59,6 +60,11 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({ onNext }) => {
   const handleNext = () => {
     dispatch(hideExtraModal());
     onNext();
+  };
+
+  const handleContinueSelecting = () => {
+    dispatch(setExtraMode(true));
+    dispatch(hideExtraModal());
   };
 
   return (
@@ -123,13 +129,13 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({ onNext }) => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={handleAddExtra}
+                  onClick={handleContinueSelecting}
                   disabled={isAddingExtra}
                   className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl 
                            font-medium text-gray-700 hover:bg-gray-50 
                            transition-colors duration-200 disabled:opacity-50"
                 >
-                  {isAddingExtra ? "Wird hinzugefügt..." : "Weitere hinzufügen"}
+                  Continue Selecting
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}

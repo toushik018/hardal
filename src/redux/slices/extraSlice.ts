@@ -11,6 +11,7 @@ interface ExtraState {
   isAddingExtra: boolean;
   error: string | null;
   showModal: boolean;
+  isExtraMode: boolean;
 }
 
 const initialState: ExtraState = {
@@ -20,7 +21,8 @@ const initialState: ExtraState = {
   },
   isAddingExtra: false,
   error: null,
-  showModal: false
+  showModal: false,
+  isExtraMode: false
 };
 
 const extraSlice = createSlice({
@@ -44,7 +46,9 @@ const extraSlice = createSlice({
     },
     hideExtraModal: (state) => {
       state.showModal = false;
-      state.selectedProduct = initialState.selectedProduct;
+    },
+    setExtraMode: (state, action: PayloadAction<boolean>) => {
+      state.isExtraMode = action.payload;
     }
   }
 });
@@ -54,6 +58,7 @@ export const selectSelectedProduct = (state: RootState) => state.extra.selectedP
 export const selectIsAddingExtra = (state: RootState) => state.extra.isAddingExtra;
 export const selectError = (state: RootState) => state.extra.error;
 export const selectShowModal = (state: RootState) => state.extra.showModal;
+export const selectIsExtraMode = (state: RootState) => state.extra.isExtraMode;
 
 export const { 
   setSelectedProduct, 
@@ -61,7 +66,8 @@ export const {
   setIsAddingExtra,
   setError,
   showExtraModal,
-  hideExtraModal
+  hideExtraModal,
+  setExtraMode
 } = extraSlice.actions;
 
 export default extraSlice.reducer; 

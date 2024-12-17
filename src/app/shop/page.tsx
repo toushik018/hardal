@@ -1,7 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 "use client";
 
+import { Suspense } from 'react';
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductList from "@/components/Products/ProductList";
@@ -17,7 +16,13 @@ import Stepper from "@/components/Stepper/Stepper";
 import { ShopSkeleton } from "@/components/Skeletons";
 import CartSummary from "@/components/Cart/CartSummary";
 import { useDispatch, useSelector } from "react-redux";
-import { clearSelectedProduct, selectShowModal, hideExtraModal, showExtraModal } from "@/redux/slices/extraSlice";
+import {
+  clearSelectedProduct,
+  selectShowModal,
+  hideExtraModal,
+  showExtraModal,
+  setExtraMode,
+} from "@/redux/slices/extraSlice";
 
 interface MenuContent {
   name: string;
@@ -26,6 +31,16 @@ interface MenuContent {
   currentCount?: number;
 }
 
+// Wrapper component with Suspense
+const ShopWrapper = () => {
+  return (
+    <Suspense fallback={<ShopSkeleton />}>
+      <Shop />
+    </Suspense>
+  );
+};
+
+// existing Shop component (unchanged)
 const Shop = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -236,8 +251,9 @@ const Shop = () => {
     const categoryState = categoryStates[categoryName];
 
     if (categoryState) {
-      // Reset modal state if count drops below requirement
+      // Reset extra mode if count drops below requirement
       if (currentCount < requiredCount) {
+        dispatch(setExtraMode(false));
         setCategoryStates((prev) => ({
           ...prev,
           [categoryName]: {
@@ -481,4 +497,4 @@ const Shop = () => {
   );
 };
 
-export default Shop;
+export default ShopWrapper;

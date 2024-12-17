@@ -1,4 +1,8 @@
-import { ECustomerType } from "../Enums";
+export enum ECustomerType {
+  Legal = 1,
+  Real = 2,
+}
+
 
 export interface IAddressModel {
   customerType: ECustomerType;

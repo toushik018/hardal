@@ -12,8 +12,8 @@ import {
 } from "@/services/api";
 import { Product } from "@/types/product";
 import { FaMinus, FaPlus } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { setSelectedProduct, showExtraModal, clearSelectedProduct } from "@/redux/slices/extraSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedProduct, showExtraModal, clearSelectedProduct, selectIsExtraMode } from "@/redux/slices/extraSlice";
 import { useAddExtraMutation } from "@/services/api";
 
 interface HorizontalMenuCardProps {
@@ -36,6 +36,8 @@ const HorizontalMenuCard = ({
   const [removeProduct] = useRemoveProductMutation();
 
   const dispatch = useDispatch();
+  const isExtraMode = useSelector(selectIsExtraMode);
+  const [addExtra] = useAddExtraMutation();
 
   useEffect(() => {
     const cartItem = cartData?.products?.find(
@@ -86,38 +88,36 @@ const HorizontalMenuCard = ({
   };
 
   const handleIncrement = async () => {
-    setIsUpdating(true);
     const toastId = toast.loading("Warenkorb aktualisieren...");
-
+    // Extra mode start
     try {
-      dispatch(setSelectedProduct({
-        id: product.product_id,
-        categoryName: activeCategoryName
-      }));
-
-      const newQuantity = localQuantity + 1;
-      const cartItem = cartData?.products?.find(
-        (item: any) => item.product_id === product.product_id
-      );
-
-      if (cartItem) {
-        await editProduct({ id: cartItem.cart_id, quantity: newQuantity });
+      if (isExtraMode) {
+        const response = await addExtra({
+          product_id: product.product_id
+        }).unwrap();
+        
+        if (response.success) {
+          toast.success("Extra erfolgreich hinzugefügt", { id: toastId });
+        }
+        // Normal mode start
       } else {
-        await addToCart({ id: product.product_id, quantity: 1 });
-      }
+        const newQuantity = localQuantity + 1;
+        const cartItem = cartData?.products?.find(
+          (item: any) => item.product_id === product.product_id
+        );
 
-      setLocalQuantity(newQuantity);
-      toast.success("Produkt zum Warenkorb hinzugefügt", { id: toastId });
+        if (cartItem) {
+          await editProduct({ id: cartItem.cart_id, quantity: newQuantity });
+        } else {
+          await addToCart({ id: product.product_id, quantity: 1 });
+        }
+
+        toast.success("Produkt zum Warenkorb hinzugefügt", { id: toastId });
+      }
+      
+      setLocalQuantity(prev => prev + 1);
     } catch (error) {
-      console.error("Fehler beim Erhöhen der Menge", error);
-      toast.error(
-        "Fehler beim Aktualisieren des Warenkorbs. Bitte versuchen Sie es erneut.",
-        { id: toastId }
-      );
-      dispatch(clearSelectedProduct());
-    } finally {
-      setIsUpdating(false);
-      refetchCart();
+      toast.error("Fehler beim Hinzufügen", { id: toastId });
     }
   };
 
@@ -257,7 +257,7 @@ const HorizontalMenuCard = ({
               <button
                 onClick={handleIncrement}
                 disabled={isUpdating}
-                className="px-6 py-2.5 bg-first text-white text-sm font-medium rounded-xl hover:bg-first/80 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+                className="px-6 py-2.5 bg-first text-white text-sm font-medium rounded-xl hover:bg-first/80 transition-colors focus:outline-none focus:ring-2 focus:ring-third focus:ring-opacity-50"
               >
                 Auswählen
               </button>
