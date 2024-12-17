@@ -25,7 +25,7 @@ const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
       {/* Card Header */}
       <div className="relative h-48 overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1555244162-803834f70033?w=800"
+          src="/images/package.jpg"
           alt={packageData.name}
           width={800}
           height={400}

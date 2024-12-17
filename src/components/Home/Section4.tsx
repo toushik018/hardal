@@ -37,7 +37,7 @@ const Section4 = () => {
 
           {/* CTA Button */}
           <Link
-            to="online-bestellen"
+            to="menu-section"
             smooth
             className="group inline-flex items-center justify-center"
           >

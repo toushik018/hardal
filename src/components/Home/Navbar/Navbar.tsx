@@ -30,10 +30,9 @@ const Navbar = () => {
   const menus = [
     { name: "Home", path: "/", type: "route" },
     { name: "Online Bestellen", path: "menu-section", type: "scroll" },
-    { name: "Reservation", path: "reservation-section", type: "scroll" },
-    { name: "Catering", path: "catering-section", type: "scroll" },
-    { name: "Galeria", path: "gallery-section", type: "scroll" },
-    { name: "Referenzen", path: "references-section", type: "scroll" },
+    { name: "Galerie", path: "gallery-section", type: "scroll" },
+    { name: "Rezensionen", path: "references-section", type: "scroll" },
+    { name: "Kontakt", path: "reservation-section", type: "scroll" },
   ];
 
   const renderMenuItem = (
@@ -163,7 +162,7 @@ const Navbar = () => {
           {/* Right Section */}
           <div className="flex items-center gap-6">
             <CartWidget />
-            <Link
+            {/* <Link
               href="/login"
               className={`
                 relative hidden md:inline-flex items-center justify-center px-6 
@@ -175,7 +174,7 @@ const Navbar = () => {
               <span className="relative text-[#0A2533] font-semibold">
                 Eintragen
               </span>
-            </Link>
+            </Link> */}
 
             {/* Mobile Menu Button */}
             <button
@@ -241,7 +240,7 @@ const Navbar = () => {
 
                 {/* Action Buttons & Info */}
                 <div className="px-6 py-8 bg-gray-50 mt-4">
-                  <Link
+                  {/* <Link
                     href="/login"
                     className="flex items-center justify-center w-full px-6 py-3.5
                              bg-first text-[#0A2533] rounded-xl font-medium 
@@ -250,7 +249,7 @@ const Navbar = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Eintragen
-                  </Link>
+                  </Link> */}
 
                   {/* Contact Info */}
                   <div className="mt-8 text-center">

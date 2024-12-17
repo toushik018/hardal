@@ -23,11 +23,12 @@ const Section1 = () => {
       {/* Background with enhanced Parallax Effect */}
       <motion.div style={{ scale }} className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?q=80&w=3270&auto=format&fit=crop"
+          src="background.jpg"
           alt="Elegant Catering"
           className="object-cover w-full h-full"
         />
         <div className="absolute inset-0 backdrop-blur-[2px] bg-gradient-to-r from-black/60 to-black/30" />
+        <div className="absolute inset-0 bg-white/20" />
       </motion.div>
 
       {/* Main Content */}
@@ -93,17 +94,17 @@ const Section1 = () => {
                   <HiArrowLongRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </a>
-              <Link
-                to="online-bestellen"
+                <Link
+                to="menu-section"
                 spy={true}
                 smooth={true}
                 className="group px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium 
-                         hover:bg-white/20 transition-all border border-white/20 cursor-pointer
-                         flex items-center gap-3"
-              >
+                     hover:bg-white/20 transition-all border border-white/20 cursor-pointer
+                     flex items-center gap-3"
+                >
                 Online Bestellen
                 <HiArrowLongRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+                </Link>
             </motion.div>
 
             {/* Stats Section */}
@@ -135,61 +136,17 @@ const Section1 = () => {
           <div className="hidden lg:block">
             <motion.div
               style={{ y: y2 }}
-              className="relative grid grid-cols-2 gap-4"
+              className="relative"
             >
               <motion.div
-                className="space-y-4"
-                variants={{
-                  visible: { transition: { staggerChildren: 0.2 } },
-                }}
+                whileHover={{ y: -5 }}
+                transition={{ type: "spring", stiffness: 300 }}
               >
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=800"
-                    alt="Turkish Catering"
-                    className="w-full h-48 object-cover rounded-2xl shadow-lg"
-                  />
-                </motion.div>
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800"
-                    alt="Turkish Food"
-                    className="w-full h-64 object-cover rounded-2xl shadow-lg"
-                  />
-                </motion.div>
-              </motion.div>
-              <motion.div
-                className="space-y-4 mt-8"
-                variants={{
-                  visible: { transition: { staggerChildren: 0.2 } },
-                }}
-              >
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1555244162-803834f70033?w=800"
-                    alt="Restaurant"
-                    className="w-full h-64 object-cover rounded-2xl shadow-lg"
-                  />
-                </motion.div>
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800"
-                    alt="Catering Service"
-                    className="w-full h-48 object-cover rounded-2xl shadow-lg"
-                  />
-                </motion.div>
+                <img
+                  src="/images/main.jpg"
+                  alt="Turkish Catering"
+                  className="w-full h-96 object-cover rounded-2xl shadow-lg"
+                />
               </motion.div>
             </motion.div>
           </div>
