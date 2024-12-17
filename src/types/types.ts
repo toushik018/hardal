@@ -30,6 +30,7 @@ export interface PackageOrder {
   package: string;
   price: number;
   products: CategoryProducts;
+  id?: string;
 }
 
 export interface MenuContent {
@@ -40,4 +41,9 @@ export interface MenuContent {
 
 export type LoadingState = {
   [key: string]: boolean;
-}; 
+};
+
+interface CartOrder {
+  [key: string]: PackageOrder;
+}
+  

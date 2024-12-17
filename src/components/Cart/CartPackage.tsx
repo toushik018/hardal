@@ -1,6 +1,9 @@
 import React from "react";
 import { PackageOrder, MenuContent, CartProduct } from "../../types/types";
 import { CartItem } from "./CartItem";
+import { Trash2, Loader2 } from "lucide-react";
+import { useDeletePackageMutation } from "@/services/api";
+import { toast } from "sonner";
 
 interface CartPackageProps {
   pkg: PackageOrder;
@@ -19,6 +22,22 @@ export const CartPackage: React.FC<CartPackageProps> = ({
   onRemove,
   loadingStates,
 }) => {
+  const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
+  
+  const handleDeletePackage = async () => {
+    try {
+      if (!pkg.id) {
+        toast.error("Paket ID nicht gefunden");
+        return;
+      }
+      const response = await deletePackage({ id: pkg.id }).unwrap();
+      console.log(response);
+      toast.success(`${pkg.package} wurde erfolgreich entfernt`);
+    } catch (error) {
+      toast.error("Fehler beim Entfernen des Pakets");
+    }
+  };
+
   const renderProducts = () => {
     if (!pkg?.products) {
       console.warn("No products found in package:", pkg);
@@ -86,7 +105,20 @@ export const CartPackage: React.FC<CartPackageProps> = ({
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4 bg-first/20 p-4 rounded-[8px]">
         <h2 className="text-xl font-semibold text-gray-800">{pkg.package}</h2>
-        <span className="text-lg font-bold text-gray-800">{pkg.price}€</span>
+        <div className="flex items-center gap-4">
+          <span className="text-lg font-bold text-gray-800">{pkg.price}€</span>
+          <button
+            onClick={handleDeletePackage}
+            disabled={isDeleting}
+            className="p-2 hover:bg-red-100 rounded-lg transition-all duration-200"
+          >
+            {isDeleting ? (
+              <Loader2 className="w-5 h-5 animate-spin text-red-500" />
+            ) : (
+              <Trash2 className="w-5 h-5 text-red-500" />
+            )}
+          </button>
+        </div>
       </div>
       {renderProducts()}
     </div>

@@ -46,22 +46,24 @@ const Cart: React.FC = () => {
   } = useGetCartQuery();
   const [editProduct] = useEditProductMutation();
   const [removeProduct] = useRemoveProductMutation();
-  const [deletePackage] = useDeletePackageMutation();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
   const [loadingStates, setLoadingStates] = useState<LoadingState>({});
 
   const cartItems = useMemo(() => {
-    if (!cartData?.cart?.order || !Array.isArray(cartData.cart.order)) {
+    if (!cartData?.cart?.order) {
       return [];
     }
 
     try {
-      return cartData.cart.order.flatMap((pkg: PackageOrder) => {
+      // Convert order to array if it's an object
+      const orderArray = Array.isArray(cartData.cart.order) 
+        ? cartData.cart.order 
+        : Object.values(cartData.cart.order);
+
+      return orderArray.flatMap((pkg: PackageOrder) => {
         if (!pkg || typeof pkg !== "object") return [];
 
         const allProducts: CartProduct[] = [];
-
         const categoryMap = new Map<string, string>();
 
         if (cartData?.cart?.menu?.contents) {
@@ -81,8 +83,7 @@ const Cart: React.FC = () => {
                     ...product,
                     category_name: categoryMap.get(categoryId) || "Andere",
                     package_name: pkg.package || "Unbekanntes Paket",
-                    package_price:
-                      typeof pkg.price === "number" ? pkg.price : 0,
+                    package_price: typeof pkg.price === "number" ? pkg.price : 0,
                   };
                   allProducts.push(extendedProduct);
                 }
@@ -194,18 +195,6 @@ const Cart: React.FC = () => {
     }
   };
 
-  const handleCancelOrder = async () => {
-    setIsConfirmingCancel(true);
-    try {
-      await deletePackage().unwrap();
-      toast.success("Bestellung erfolgreich storniert");
-      router.push("/");
-    } catch (error) {
-      toast.error("Fehler beim Stornieren der Bestellung");
-      setIsConfirmingCancel(false);
-    }
-  };
-
   const handleCheckout = async () => {
     setIsProcessing(true);
     try {
@@ -259,35 +248,6 @@ const Cart: React.FC = () => {
               <ShoppingCart className="mr-2 h-10 w-10" />
               Ihr Warenkorb
             </h1>
-            {cartItems.length > 0 && (
-              <button
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Sind Sie sicher, dass Sie die gesamte Bestellung stornieren möchten?"
-                    )
-                  ) {
-                    handleCancelOrder();
-                  }
-                }}
-                disabled={isConfirmingCancel}
-                className={`flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm transition-colors px-4 py-2 rounded-xl bg-red-100 ${
-                  isConfirmingCancel ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                {isConfirmingCancel ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                    Stornieren...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 size={16} />
-                    Bestellung stornieren
-                  </>
-                )}
-              </button>
-            )}
           </div>
 
           {cartItems.length === 0 ? (
@@ -312,25 +272,45 @@ const Cart: React.FC = () => {
           ) : (
             <>
               <AnimatePresence mode="wait">
-                {cartData?.cart?.order?.map(
-                  (pkg: PackageOrder, index: number) => (
-                    <motion.div
-                      key={`${pkg.package}-${index}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <CartPackage
-                        pkg={pkg}
-                        cartData={cartData}
-                        onIncrement={handleIncrement}
-                        onDecrement={handleDecrement}
-                        onRemove={handleRemove}
-                        loadingStates={loadingStates}
-                      />
-                    </motion.div>
-                  )
-                )}
+                {Array.isArray(cartData?.cart?.order) 
+                  ? cartData.cart.order.map((pkg: PackageOrder, index: number) => (
+                      <motion.div
+                        key={`${pkg.package}-${index}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <CartPackage
+                          pkg={pkg}
+                          cartData={cartData}
+                          onIncrement={handleIncrement}
+                          onDecrement={handleDecrement}
+                          onRemove={handleRemove}
+                          loadingStates={loadingStates}
+                        />
+                      </motion.div>
+                    ))
+                  : Object.values(cartData?.cart?.order || {}).map((pkg, index) => {
+                      const packageOrder = pkg as PackageOrder;
+                      return (
+                        <motion.div
+                          key={`${packageOrder.package}-${index}`}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <CartPackage
+                            pkg={packageOrder}
+                            cartData={cartData}
+                            onIncrement={handleIncrement}
+                            onDecrement={handleDecrement}
+                            onRemove={handleRemove}
+                            loadingStates={loadingStates}
+                          />
+                        </motion.div>
+                      );
+                    })
+                }
               </AnimatePresence>
 
               <motion.div
@@ -348,43 +328,22 @@ const Cart: React.FC = () => {
                     Gesamt: <span className="text-first">{totalPrice}</span>
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Are you sure you want to cancel the entire order?"
-                        )
-                      ) {
-                        handleCancelOrder();
-                      }
-                    }}
-                    disabled={isConfirmingCancel}
-                    className={`px-6 py-3 text-red-600 hover:text-red-700 font-semibold transition-colors ${
-                      isConfirmingCancel ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    {isConfirmingCancel
-                      ? "Stornieren..."
-                      : "Bestellung stornieren"}
-                  </button>
-                  <button
-                    onClick={handleCheckout}
-                    disabled={isProcessing}
-                    className={`inline-block bg-first hover:bg-first/80 text-white px-8 py-3 rounded-[8px] font-semibold transition-all hover:shadow-lg transform hover:-translate-y-1 disabled:transform-none disabled:hover:shadow-none disabled:opacity-75 ${
-                      isProcessing ? "cursor-not-allowed" : ""
-                    }`}
-                  >
-                    {isProcessing ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 border-2 rounded-xl border-white border-t-transparent animate-spin"></div>
-                        <span>Verarbeiten...</span>
-                      </div>
-                    ) : (
-                      "Zur Kasse"
-                    )}
-                  </button>
-                </div>
+                <button
+                  onClick={handleCheckout}
+                  disabled={isProcessing}
+                  className={`inline-block bg-first hover:bg-first/80 text-white px-8 py-3 rounded-[8px] font-semibold transition-all hover:shadow-lg transform hover:-translate-y-1 disabled:transform-none disabled:hover:shadow-none disabled:opacity-75 ${
+                    isProcessing ? "cursor-not-allowed" : ""
+                  }`}
+                >
+                  {isProcessing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 rounded-xl border-white border-t-transparent animate-spin"></div>
+                      <span>Verarbeiten...</span>
+                    </div>
+                  ) : (
+                    "Zur Kasse"
+                  )}
+                </button>
               </motion.div>
             </>
           )}

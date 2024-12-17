@@ -147,10 +147,13 @@ export const api = createApi({
             }),
             invalidatesTags: ['Cart'],
         }),
-        deletePackage: builder.mutation<any, void>({
-            query: () => ({
+        deletePackage: builder.mutation<any, { id: string }>({
+            query: (body) => ({
                 url: 'delete-package',
                 method: 'POST',
+                body: {
+                    id: body.id.toString()
+                }
             }),
             invalidatesTags: ['Cart'],
         }),
