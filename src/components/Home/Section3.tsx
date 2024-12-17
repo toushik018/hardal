@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 const Section3 = () => {
   return (
     <section id="gallery-section" className="container mx-auto px-4 py-24">
@@ -24,7 +26,9 @@ const Section3 = () => {
         {/* Left Column */}
         <div className="space-y-8">
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/5]">
-            <img
+            <Image
+              width={1000}
+              height={1000}
               src="/images/img1.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -32,7 +36,9 @@ const Section3 = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/3]">
-            <img
+            <Image
+              width={1000}
+              height={1000}
               src="/images/img5.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -44,7 +50,9 @@ const Section3 = () => {
         {/* Middle Column */}
         <div className="space-y-8 md:translate-y-12">
           <div className="group relative overflow-hidden rounded-2xl aspect-square">
-            <img
+            <Image
+              width={1000}
+              height={1000}
               src="/images/img4.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -52,7 +60,9 @@ const Section3 = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/5]">
-            <img
+            <Image
+              width={1000}
+              height={1000}
               src="/images/img2.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -64,7 +74,9 @@ const Section3 = () => {
         {/* Right Column */}
         <div className="space-y-8">
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/3]">
-            <img
+            <Image
+              width={1000}
+              height={1000}
               src="/images/img3.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -72,7 +84,9 @@ const Section3 = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/5]">
-            <img
+            <Image
+              width={1000}
+              height={1000}
               src="/images/img6.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"

@@ -1,10 +1,10 @@
 "use client";
 
-
 import { motion, useScroll, useTransform } from "framer-motion";
 import { HiArrowLongRight } from "react-icons/hi2";
 import { useRef } from "react";
 import { Link } from "react-scroll";
+import Image from "next/image";
 
 const Section1 = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,10 +22,14 @@ const Section1 = () => {
     <div ref={containerRef} className="relative min-h-screen overflow-hidden">
       {/* Background with enhanced Parallax Effect */}
       <motion.div style={{ scale }} className="absolute inset-0">
-        <img
-          src="background.jpg"
+        <Image
+          src="/background.jpg"
           alt="Elegant Catering"
-          className="object-cover w-full h-full"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+          quality={100}
         />
         <div className="absolute inset-0 backdrop-blur-[2px] bg-gradient-to-r from-black/60 to-black/30" />
         <div className="absolute inset-0 bg-white/20" />
@@ -141,11 +145,15 @@ const Section1 = () => {
               <motion.div
                 whileHover={{ y: -5 }}
                 transition={{ type: "spring", stiffness: 300 }}
+                className="relative w-full h-96"
               >
-                <img
+                <Image
                   src="/images/main.jpg"
                   alt="Turkish Catering"
-                  className="w-full h-96 object-cover rounded-2xl shadow-lg"
+                  fill
+                  className="object-cover rounded-2xl shadow-lg"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  quality={100}
                 />
               </motion.div>
             </motion.div>

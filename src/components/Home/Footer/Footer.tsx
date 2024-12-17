@@ -1,9 +1,26 @@
+"use client";
+
 import { FaChevronRight } from "react-icons/fa";
 import { FaFacebookF, FaInstagram } from "react-icons/fa";
 import Image from "next/image";
-import path from "path";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const Footer = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(null);
+  }, [pathname]);
+
+  const handleNavigation = (path: string) => {
+    setLoading(path);
+    router.push(path);
+  };
+
   const footerMenu1 = {
     name: "Links",
     menus: [
@@ -32,15 +49,17 @@ const Footer = () => {
             <h2 className="text-xl font-semibold">{footerMenu1.name}</h2>
             <ul className="flex flex-col gap-3">
               {footerMenu1.menus.map((menu, index) => (
-              <li
-                key={index}
-                className="group cursor-pointer flex items-center justify-between 
+                <li
+                  key={index}
+                  className="group cursor-pointer flex items-center justify-between 
                      py-2 border-b border-transparent hover:border-first 
                      hover:text-first transition-all duration-300"
-              >
-                <a href={`#${menu.path}`} className="font-medium">{menu.name}</a>
-                <FaChevronRight className="size-4 transform group-hover:translate-x-1 transition-transform" />
-              </li>
+                >
+                  <a href={`#${menu.path}`} className="font-medium">
+                    {menu.name}
+                  </a>
+                  <FaChevronRight className="size-4 transform group-hover:translate-x-1 transition-transform" />
+                </li>
               ))}
             </ul>
           </div>
@@ -60,7 +79,9 @@ const Footer = () => {
               </h2>
               <p className="text-gray-600 leading-relaxed max-w-md">
                 Erleben Sie erstklassiges türkisches Catering für Ihre
-                Veranstaltungen. Von exklusiven Firmenfeiern bis zu unvergesslichen Hochzeiten - wir bieten authentische Geschmackserlebnisse für jeden Anlass.
+                Veranstaltungen. Von exklusiven Firmenfeiern bis zu
+                unvergesslichen Hochzeiten - wir bieten authentische
+                Geschmackserlebnisse für jeden Anlass.
               </p>
             </div>
             {/* Social Links */}
@@ -99,9 +120,24 @@ const Footer = () => {
                   className="group cursor-pointer flex items-center justify-between 
                            py-2 border-b border-transparent hover:border-first 
                            hover:text-first transition-all duration-300"
+                  onClick={() => handleNavigation(menu.path)}
                 >
-                  <a href={menu.path} className="font-medium">{menu.name}</a>
-                  <FaChevronRight className="size-4 transform group-hover:translate-x-1 transition-transform" />
+                  <span className="font-medium relative">
+                    {menu.name}
+                    {loading === menu.path && (
+                      <span className="absolute -right-6 top-1/2 -translate-y-1/2">
+                        <div className="w-4 h-4 border-2 border-first border-t-transparent rounded-full animate-spin"></div>
+                      </span>
+                    )}
+                  </span>
+                  <FaChevronRight
+                    className={`size-4 transform transition-transform
+                      ${
+                        loading === menu.path
+                          ? "opacity-0"
+                          : "group-hover:translate-x-1"
+                      }`}
+                  />
                 </li>
               ))}
             </ul>
@@ -111,7 +147,8 @@ const Footer = () => {
         {/* Copyright Section */}
         <div className="mt-16 pt-8 border-t border-gray-200">
           <p className="text-center text-gray-600 text-sm">
-            © {new Date().getFullYear()} Hardal Catering. Alle Rechte vorbehalten.
+            © {new Date().getFullYear()} Hardal Catering. Alle Rechte
+            vorbehalten.
           </p>
         </div>
       </div>
