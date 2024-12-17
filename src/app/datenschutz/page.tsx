@@ -26,7 +26,7 @@ const Datenschutz = () => {
           <div className="prose max-w-none">
             {/* Introduction Section */}
 
-            <p className="text-gray-600 leading-relaxed">
+            <p className="leading-relaxed">
               Wir freuen uns sehr über Ihr Interesse an unserem Unternehmen.
               Datenschutz hat einen besonders hohen Stellenwert für die
               Geschäftsleitung der Köz Hamburg GmbH. Eine Nutzung der

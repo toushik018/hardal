@@ -135,7 +135,7 @@ const Navbar = () => {
         ${
           isHomePage
             ? scrolled
-              ? "bg-white/90 backdrop-blur-lg border-b border-gray-100"
+              ? "bg-white/90 border-b border-gray-100"
               : "bg-transparent"
             : "bg-white/90 backdrop-blur-lg border-b border-gray-100"
         }
