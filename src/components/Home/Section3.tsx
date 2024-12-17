@@ -25,7 +25,7 @@ const Section3 = () => {
         <div className="space-y-8">
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/5]">
             <img
-              src="/img1.png"
+              src="/images/img1.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -33,7 +33,7 @@ const Section3 = () => {
           </div>
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/3]">
             <img
-              src="/img2.png"
+              src="/images/img5.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -45,7 +45,7 @@ const Section3 = () => {
         <div className="space-y-8 md:translate-y-12">
           <div className="group relative overflow-hidden rounded-2xl aspect-square">
             <img
-              src="/img3.png"
+              src="/images/img4.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -53,7 +53,7 @@ const Section3 = () => {
           </div>
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/5]">
             <img
-              src="/img1.png"
+              src="/images/img2.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -65,7 +65,7 @@ const Section3 = () => {
         <div className="space-y-8">
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/3]">
             <img
-              src="/img2.png"
+              src="/images/img3.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -73,7 +73,7 @@ const Section3 = () => {
           </div>
           <div className="group relative overflow-hidden rounded-2xl aspect-[4/5]">
             <img
-              src="/img3.png"
+              src="/images/img6.jpg"
               alt="Culinary creation"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />

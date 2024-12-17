@@ -12,9 +12,9 @@ import Loading from "@/components/Loading/Loading";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Harald Catering",
+  title: "Hardal Catering",
   description:
-    "Harald Catering, Catering für Ihre Veranstaltung in der Region Hamburg und Umgebung",
+    "Hardal Catering, Catering für Ihre Veranstaltung in der Region Hamburg und Umgebung",
 };
 
 export default function RootLayout({

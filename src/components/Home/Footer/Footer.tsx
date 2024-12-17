@@ -1,25 +1,25 @@
 import { FaChevronRight } from "react-icons/fa";
 import { FaFacebookF, FaInstagram } from "react-icons/fa";
 import Image from "next/image";
+import path from "path";
 
 const Footer = () => {
   const footerMenu1 = {
-    name: "Unsere Dienstleistungen",
+    name: "Links",
     menus: [
-      { name: "Frühstück" },
-      { name: "Brunch" },
-      { name: "Catering" },
-      { name: "Reservierung" },
+      { name: "Home", path: "/" },
+      { name: "Online Bestellen", path: "menu-section" },
+      { name: "Galerie", path: "gallery-section" },
+      { name: "Rezensionen", path: "references-section" },
+      { name: "Kontakt", path: "reservation-section" },
     ],
   };
 
   const footerMenu2 = {
-    name: "Unser Menü",
+    name: "Datenschutz & Impressum",
     menus: [
-      { name: "Soups" },
-      { name: "Salads" },
-      { name: "Mixed Grill" },
-      { name: "Falafel" },
+      { name: "Datenschutz", path: "/datenschutz" },
+      { name: "Impressum", path: "/impressum" },
     ],
   };
 
@@ -32,15 +32,15 @@ const Footer = () => {
             <h2 className="text-xl font-semibold">{footerMenu1.name}</h2>
             <ul className="flex flex-col gap-3">
               {footerMenu1.menus.map((menu, index) => (
-                <li
-                  key={index}
-                  className="group cursor-pointer flex items-center justify-between 
-                           py-2 border-b border-transparent hover:border-first 
-                           hover:text-first transition-all duration-300"
-                >
-                  <span className="font-medium">{menu.name}</span>
-                  <FaChevronRight className="size-4 transform group-hover:translate-x-1 transition-transform" />
-                </li>
+              <li
+                key={index}
+                className="group cursor-pointer flex items-center justify-between 
+                     py-2 border-b border-transparent hover:border-first 
+                     hover:text-first transition-all duration-300"
+              >
+                <a href={`#${menu.path}`} className="font-medium">{menu.name}</a>
+                <FaChevronRight className="size-4 transform group-hover:translate-x-1 transition-transform" />
+              </li>
               ))}
             </ul>
           </div>
@@ -56,12 +56,11 @@ const Footer = () => {
             />
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold">
-                Achtung Neuer Lieferservice
+                Hardal Catering & Events
               </h2>
               <p className="text-gray-600 leading-relaxed max-w-md">
-                Einfach anrufen, bestellen und schon bald könnt ihr die bestellten
-                Gerichte auch zu Hause vor dem Fernseher oder bei der Arbeit
-                genießen.
+                Erleben Sie erstklassiges türkisches Catering für Ihre
+                Veranstaltungen. Von exklusiven Firmenfeiern bis zu unvergesslichen Hochzeiten - wir bieten authentische Geschmackserlebnisse für jeden Anlass.
               </p>
             </div>
             {/* Social Links */}
@@ -101,7 +100,7 @@ const Footer = () => {
                            py-2 border-b border-transparent hover:border-first 
                            hover:text-first transition-all duration-300"
                 >
-                  <span className="font-medium">{menu.name}</span>
+                  <a href={menu.path} className="font-medium">{menu.name}</a>
                   <FaChevronRight className="size-4 transform group-hover:translate-x-1 transition-transform" />
                 </li>
               ))}
