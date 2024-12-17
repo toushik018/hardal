@@ -56,20 +56,27 @@ const Shop = () => {
   const {
     data: menuContentData,
     isLoading: isMenuContentLoading,
-    error: menuContentError
+    error: menuContentError,
   } = useGetMenuContentQuery(Number(menuId), {
-    skip: !menuId || isNaN(Number(menuId))
+    skip: !menuId || isNaN(Number(menuId)),
   });
 
   const menuContents = useMemo(() => {
-    if (!menuContentData?.contents || !Array.isArray(menuContentData.contents)) {
+    if (
+      !menuContentData?.contents ||
+      !Array.isArray(menuContentData.contents)
+    ) {
       return [];
     }
     return menuContentData.contents;
   }, [menuContentData]);
 
   const currentCategory = useMemo(() => {
-    if (!menuContents.length || activeStep < 0 || activeStep >= menuContents.length) {
+    if (
+      !menuContents.length ||
+      activeStep < 0 ||
+      activeStep >= menuContents.length
+    ) {
       return null;
     }
     return menuContents[activeStep];
@@ -78,12 +85,14 @@ const Shop = () => {
   useEffect(() => {
     if (!menuId) {
       setError("Menü ID fehlt. Bitte wählen Sie ein Menü aus.");
-      router.push('/');
+      router.push("/");
       return;
     }
 
     if (menuContentError) {
-      setError("Fehler beim Laden des Menüs. Bitte versuchen Sie es später erneut.");
+      setError(
+        "Fehler beim Laden des Menüs. Bitte versuchen Sie es später erneut."
+      );
       return;
     }
 
@@ -93,10 +102,19 @@ const Shop = () => {
     }
 
     setError(null);
-  }, [menuId, menuContentError, menuContents.length, isMenuContentLoading, router]);
+  }, [
+    menuId,
+    menuContentError,
+    menuContents.length,
+    isMenuContentLoading,
+    router,
+  ]);
 
   useEffect(() => {
-    if (menuContents.length > 0 && (activeStep < 0 || activeStep >= menuContents.length)) {
+    if (
+      menuContents.length > 0 &&
+      (activeStep < 0 || activeStep >= menuContents.length)
+    ) {
       setActiveStep(0);
     }
   }, [menuContents.length, activeStep]);
@@ -254,31 +272,6 @@ const Shop = () => {
   }, [currentCategory?.name, currentCount]);
 
   useEffect(() => {
-    if (!currentCategory) return;
-
-    const handleShowModal = () => {
-      const categoryName = currentCategory.name;
-      const requiredCount = currentCategory.count || 0;
-      const categoryState = categoryStates[categoryName];
-
-      if (currentCount >= requiredCount && !categoryState?.hasShownModal) {
-        setShowExtraProductsModal(true);
-        setCategoryStates((prev) => ({
-          ...prev,
-          [categoryName]: {
-            hasShownModal: true,
-            lastCount: currentCount,
-          },
-        }));
-      }
-    };
-
-    window.addEventListener("showExtraProductsModal", handleShowModal);
-    return () =>
-      window.removeEventListener("showExtraProductsModal", handleShowModal);
-  }, [currentCategory?.name, currentCount, categoryStates]);
-
-  useEffect(() => {
     setShowExtraProductsModal(false);
   }, [activeStep]);
 
@@ -401,7 +394,7 @@ const Shop = () => {
           </h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push("/")}
             className="px-6 py-3 bg-first text-second rounded-xl font-medium
                      hover:bg-first/90 transition-all duration-200"
           >
@@ -433,7 +426,7 @@ const Shop = () => {
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {currentCategory?.name || 'Menü'}
+                  {currentCategory?.name || "Menü"}
                 </h1>
                 <span className="text-sm text-gray-500">
                   {currentCategory?.count || 0} Auswahl inklusive im Paket
@@ -472,7 +465,7 @@ const Shop = () => {
           </div>
 
           {/* Right Column - Cart Summary */}
-          <CartSummary 
+          <CartSummary
             cartData={cartData}
             currentCategory={currentCategory}
             getCurrentCategoryCount={getCurrentCategoryCount}
