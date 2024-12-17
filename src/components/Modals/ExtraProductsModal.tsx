@@ -135,7 +135,7 @@ const ExtraProductsModal: React.FC<ExtraProductsModalProps> = ({ onNext }) => {
                            font-medium text-gray-700 hover:bg-gray-50 
                            transition-colors duration-200 disabled:opacity-50"
                 >
-                  Continue Selecting
+                  Weiter auswählen
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
