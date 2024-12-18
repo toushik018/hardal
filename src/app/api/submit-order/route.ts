@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       menu: cartData.cart.menu 
     };
 
-    console.log('Formatted order data:', orderData); 
+    // console.log('Formatted order data:', orderData); 
 
 
     const doc = await generateOrderPDF({

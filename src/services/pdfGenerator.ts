@@ -56,7 +56,7 @@ export const generateOrderPDF = async ({
     // Add Logo
     try {
         const base64Logo = await loadImageAsBase64('/logos/logo.png');
-        doc.addImage(base64Logo, 'PNG', 15, 10, 30, 30);
+        doc.addImage(base64Logo, 'PNG', 15, 10, 30, 15);
     } catch (error) {
         console.error('Error adding logo to PDF:', error);
     }
@@ -113,7 +113,7 @@ export const generateOrderPDF = async ({
 
             // If menu is available and matches current package, organize by menu categories
             const isMenuPackage = orderData.menu?.name === pkg.package;
-            
+
             if (isMenuPackage && orderData.menu) {
                 // Process products according to menu categories
                 orderData.menu.contents.forEach(category => {
