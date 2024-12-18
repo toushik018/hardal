@@ -12,7 +12,7 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2, Loader2 } from "lucide-react";
 import {
   CartSkeleton,
 } from "@/components/Skeletons/CartSkeleton";
@@ -48,6 +48,7 @@ const Cart: React.FC = () => {
   const [removeProduct] = useRemoveProductMutation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingStates, setLoadingStates] = useState<LoadingState>({});
+  const [deletePackage, { isLoading: isClearing }] = useDeletePackageMutation();
 
   const cartItems = useMemo(() => {
     if (!cartData?.cart?.order) {
@@ -206,6 +207,17 @@ const Cart: React.FC = () => {
     }
   };
 
+  const handleClearCart = async () => {
+    if (window.confirm("Möchten Sie wirklich den gesamten Warenkorb leeren?")) {
+      try {
+        await deletePackage({}).unwrap();
+        toast.success("Warenkorb wurde erfolgreich geleert");
+      } catch (error) {
+        toast.error("Fehler beim Leeren des Warenkorbs");
+      }
+    }
+  };
+
   if (isCartLoading) {
     return (
       <div className="min-h-screen py-12 px-4 md:px-8 bg-gray-50">
@@ -248,6 +260,27 @@ const Cart: React.FC = () => {
               <ShoppingCart className="mr-2 h-10 w-10" />
               Ihr Warenkorb
             </h1>
+            {cartItems.length > 0 && (
+              <button
+                onClick={handleClearCart}
+                disabled={isClearing}
+                className="flex items-center gap-2 px-4 py-2 text-red-600 
+                         bg-red-50 hover:bg-red-100 rounded-xl transition-colors
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isClearing ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Wird geleert...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-5 w-5" />
+                    <span>Warenkorb leeren</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           {cartItems.length === 0 ? (

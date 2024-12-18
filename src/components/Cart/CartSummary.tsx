@@ -36,7 +36,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
     try {
       await onNext();
     } catch (error) {
-      console.error('Navigation error:', error);
+      console.error("Navigation error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -65,46 +65,57 @@ const CartSummary: React.FC<CartSummaryProps> = ({
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-6">Bestellübersicht</h2>
           <ScrollArea className="h-[300px] lg:h-[400px] mb-6">
-            <div className="space-y-3 pr-4">
-              <AnimatePresence mode="popLayout">
-                {cartData?.products?.map((product: any) => (
-                  <motion.div
-                    key={product.cart_id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className="flex justify-between items-start p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">
-                        {product.name}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm text-gray-600">
-                          × {product.quantity}
-                        </span>
-                        {product.price !== "0.00€" && (
-                          <span className="text-sm text-gray-600">
-                            {product.price}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveProduct(product.cart_id)}
-                      disabled={removingId === product.cart_id}
-                      className="p-2 hover:bg-red-100 rounded-lg transition-all duration-200"
+            {(!cartData?.products || cartData.products.length === 0) ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                <p className="text-lg font-medium text-gray-900 mb-2">
+                  Ihr Warenkorb ist leer
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Fügen Sie Gerichte aus unserem Menü hinzu
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 pr-4">
+                <AnimatePresence mode="popLayout">
+                  {cartData?.products?.map((product: any) => (
+                    <motion.div
+                      key={product.cart_id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      className="flex justify-between items-start p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                      {removingId === product.cart_id ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-red-500" />
-                      ) : (
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      )}
-                    </button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-800">
+                          {product.name}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm text-gray-600">
+                            × {product.quantity}
+                          </span>
+                          {product.price !== "0.00€" && (
+                            <span className="text-sm text-gray-600">
+                              {product.price}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveProduct(product.cart_id)}
+                        disabled={removingId === product.cart_id}
+                        className="p-2 hover:bg-red-100 rounded-lg transition-all duration-200"
+                      >
+                        {removingId === product.cart_id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+                        ) : (
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        )}
+                      </button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
           </ScrollArea>
 
           <div className="border-t pt-4 mb-6">
