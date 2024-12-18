@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface CheckoutFormProps {
   onSubmit: (data: CheckoutFormData) => Promise<void>;
@@ -28,12 +29,23 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onSubmit }) => {
     formState: { errors, isSubmitting },
   } = useForm<CheckoutFormData>();
 
+  const handleFormSubmit = async (data: CheckoutFormData) => {
+    const loadingToast = toast.loading(
+      "Bitte warten Sie, während Ihre Bestellung bestätigt wird. Dies kann einen Moment dauern..."
+    );
+    try {
+      await onSubmit(data);
+    } finally {
+      toast.dismiss(loadingToast);
+    }
+  };
+
   return (
     <motion.form
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6 bg-white p-6 rounded-xl shadow-sm"
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleFormSubmit)}
     >
       <h2 className="text-2xl font-bold mb-6">Ihre Informationen</h2>
 

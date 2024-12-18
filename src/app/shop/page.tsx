@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from 'react';
+import { Suspense } from "react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductList from "@/components/Products/ProductList";
@@ -433,7 +433,7 @@ const Shop = () => {
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
       {/* Sticky Header with Professional Stepper */}
-      <div className="sticky top-0 z-30 bg-white border-b">
+      <div className="sticky top-0 bg-white border-b z-40">
         <div className="w-full px-5 py-6">
           <div className="max-w-[1400px] mx-auto">
             {/* Category Info */}

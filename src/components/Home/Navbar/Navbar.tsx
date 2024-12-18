@@ -130,27 +130,28 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`left-0 right-0 z-50 w-full transition-all duration-300
+      className={`w-full transition-all duration-300 z-50
         ${scrolled ? "h-16" : "h-24"}
         ${
           isHomePage
             ? scrolled
-              ? "bg-white/90 border-b border-gray-100"
+              ? "bg-white border-b border-gray-100 backdrop-blur-lg"
               : "bg-transparent"
-            : "bg-white/90 backdrop-blur-lg border-b border-gray-100"
+            : "bg-white border-b border-gray-100"
         }
       `}
     >
       <div className="container mx-auto px-4 h-full">
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
-          <Link href="/" className="relative z-50">
+          <Link href="/" className="relative">
             <Image
               src="/logos/logo.png"
               alt="Hardal Catering"
               width={scrolled ? 100 : 120}
               height={scrolled ? 40 : 48}
               className="transition-all duration-300"
+              priority
             />
           </Link>
 
@@ -162,19 +163,21 @@ const Navbar = () => {
           {/* Right Section */}
           <div className="flex items-center gap-6">
             <CartWidget />
-            {/* <Link
+            <Link
               href="/login"
               className={`
-                relative hidden md:inline-flex items-center justify-center px-6 
-                overflow-hidden font-medium transition-all bg-first 
-                rounded-xl hover:bg-first/90 group
-                ${scrolled ? "py-2" : "py-2.5"}
-              `}
+        relative hidden md:inline-flex items-center justify-center
+        px-6 py-2.5 overflow-hidden font-medium
+        bg-first text-[#0A2533] rounded-xl
+        transition-all duration-300 ease-in-out
+        hover:bg-first/90 focus:outline-none focus:ring-2 focus:ring-first focus:ring-opacity-50
+        ${scrolled ? "shadow-sm" : "shadow-none"}
+      `}
             >
-              <span className="relative text-[#0A2533] font-semibold">
+              <span className="relative inline-flex items-center">
                 Eintragen
               </span>
-            </Link> */}
+            </Link>
 
             {/* Mobile Menu Button */}
             <button
@@ -200,7 +203,7 @@ const Navbar = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm lg:hidden z-40"
+              className="fixed inset-0 bg-black/60 lg:hidden z-[60]"
               onClick={() => setIsMenuOpen(false)}
             />
 
@@ -210,16 +213,17 @@ const Navbar = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 120 }}
-              className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl lg:hidden z-50"
+              className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl lg:hidden z-[70]"
             >
               {/* Menu Header */}
-              <div className="sticky top-0 z-50 flex items-center justify-between px-6 h-16 bg-white border-b border-gray-100">
+              <div className="flex items-center justify-between px-6 h-16 bg-white border-b border-gray-100">
                 <Image
                   src="/logos/logo.png"
                   alt="Hardal Catering"
                   width={100}
                   height={40}
                   className="h-8 w-auto"
+                  priority
                 />
                 <button
                   onClick={() => setIsMenuOpen(false)}
@@ -239,18 +243,7 @@ const Navbar = () => {
                 </div>
 
                 {/* Action Buttons & Info */}
-                <div className="px-6 py-8 bg-gray-50 mt-4">
-                  {/* <Link
-                    href="/login"
-                    className="flex items-center justify-center w-full px-6 py-3.5
-                             bg-first text-[#0A2533] rounded-xl font-medium 
-                             hover:bg-first/90 transition-all duration-200
-                             shadow-sm hover:shadow-md"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Eintragen
-                  </Link> */}
-
+                <div className="px-6 py-8 bg-gray-50 mt-4 border-t border-gray-100">
                   {/* Contact Info */}
                   <div className="mt-8 text-center">
                     <p className="text-sm text-gray-500 mb-2">
