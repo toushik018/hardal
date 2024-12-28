@@ -257,7 +257,7 @@ const Cart: React.FC = () => {
 
       router.push("/checkout");
     } catch (error) {
-      toast.error("Fehler beim Weiterleiten zur Kasse");
+      toast.error("Fehler beim Weiterleiten zum Auftrag");
       setIsProcessing(false);
     }
   };
@@ -432,7 +432,7 @@ const Cart: React.FC = () => {
                       <span>Verarbeiten...</span>
                     </div>
                   ) : (
-                    "Zur Kasse"
+                    "Auftrag erstellen"
                   )}
                 </button>
               </motion.div>
