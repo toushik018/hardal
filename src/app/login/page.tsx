@@ -157,7 +157,7 @@ const Login = () => {
                 <div className="w-5 h-5 border-2  rounded-full animate-spin" />
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  Eintragen
+                  Einloggen
                   <FiArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </span>
               )}

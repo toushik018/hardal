@@ -78,7 +78,7 @@ const OrderConfirmation = () => {
             <div className="flex items-start space-x-3">
               <Download className="w-6 h-6 text-gray-400 mt-0.5" />
               <p className="text-gray-600">
-                Eine PDF-Rechnung wurde an Ihre E-Mail-Adresse gesendet.
+                Ein Angebot wurde an Ihre E-Mail-Adresse gesendet.
               </p>
             </div>
           </div>
