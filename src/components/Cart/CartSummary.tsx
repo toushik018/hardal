@@ -171,7 +171,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
                 <>
                   <span>
                     {activeStep === menuContents.length - 1
-                      ? "Auftrag erstellen"
+                      ? "Warenkorb ansehen"
                       : "Weiter"}
                   </span>
                   <ChevronRight className="w-5 h-5" />

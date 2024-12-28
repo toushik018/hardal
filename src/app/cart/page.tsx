@@ -419,6 +419,9 @@ const Cart: React.FC = () => {
                     Gesamt: <span className="text-first">{totalPrice}</span>
                   </div>
                 </div>
+                <Link href="/#menu-section" className="inline-block bg-second hover:bg-second/80 text-white px-8 py-3 rounded-[8px] font-semibold transition-all hover:shadow-lg transform hover:-translate-y-1 disabled:transform-none disabled:hover:shadow-none disabled:opacity-75">
+                  Zurück zu den Menüs
+                </Link>
                 <button
                   onClick={handleCheckout}
                   disabled={isProcessing}
