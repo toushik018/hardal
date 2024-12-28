@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import GuestsCountModal from "@/components/Modals/GuestsCountModal";
 import { Package } from "@/types/package";
 import { clearToken } from "@/redux/slices/sessionSlice";
+import { useRouter } from "next/navigation";
 
 // Separate Skeleton component
 const SkeletonCard = () => (
@@ -31,6 +32,7 @@ const Section2 = () => {
     (state: RootState) => state.session.isInitialized
   );
   const dispatch = useDispatch();
+  const router = useRouter();
 
   const { data, isLoading, error } = useGetPackagesQuery(undefined, {
     skip: !isInitialized,
@@ -58,6 +60,15 @@ const Section2 = () => {
       "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     // Reload the page to get new session
     window.location.reload();
+  };
+
+  const handleGuestCountSubmit = (guestCount: number) => {
+    if (selectedPackage) {
+      // Store the guest count in URL params
+      router.push(`/shop?menu=${selectedPackage.id}&guests=${guestCount}`);
+      setShowGuestsModal(false);
+      setSelectedPackage(null);
+    }
   };
 
   return (
@@ -168,6 +179,7 @@ const Section2 = () => {
               setSelectedPackage(null);
             }}
             packageData={selectedPackage}
+            onSubmit={handleGuestCountSubmit}
           />
         </div>
       )}

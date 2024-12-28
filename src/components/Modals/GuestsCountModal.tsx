@@ -13,12 +13,14 @@ interface GuestsCountModalProps {
     name: string;
     minimumClients: number;
   };
+  onSubmit: (guestCount: number) => void;
 }
 
 const GuestsCountModal: React.FC<GuestsCountModalProps> = ({
   isOpen,
   onClose,
   packageData,
+  onSubmit,
 }) => {
   const [guestCount, setGuestCount] = useState(packageData.minimumClients);
   const [error, setError] = useState("");
@@ -35,8 +37,7 @@ const GuestsCountModal: React.FC<GuestsCountModalProps> = ({
       setError(`Mindestens ${packageData.minimumClients} Gäste erforderlich`);
       return;
     }
-    // Navigate to shop page with both menu ID and guest count
-    router.push(`/shop?menu=${packageData.id}&guests=${guestCount}`);
+    onSubmit(guestCount);
   };
 
   const handleGuestCountChange = (value: string) => {
@@ -101,7 +102,10 @@ const GuestsCountModal: React.FC<GuestsCountModalProps> = ({
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="guestCount" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="guestCount"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Anzahl der Gäste
                   </label>
                   <input
@@ -141,4 +145,4 @@ const GuestsCountModal: React.FC<GuestsCountModalProps> = ({
   );
 };
 
-export default GuestsCountModal; 
+export default GuestsCountModal;

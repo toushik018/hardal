@@ -19,6 +19,7 @@ import { api } from '@/services/api';
 import sessionReducer from '../slices/sessionSlice';
 import loadingReducer from '../slices/loadingSlice';
 import extraReducer from '../slices/extraSlice';
+import guestCountReducer from '../slices/guestCountSlice';
 
 export const store = configureStore({
     reducer: {
@@ -26,6 +27,7 @@ export const store = configureStore({
         session: sessionReducer,
         loading: loadingReducer,
         extra: extraReducer,
+        guestCount: guestCountReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(api.middleware),

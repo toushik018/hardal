@@ -23,7 +23,7 @@ export const CartPackage: React.FC<CartPackageProps> = ({
   loadingStates,
 }) => {
   const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
-  
+
   const handleDeletePackage = async () => {
     try {
       if (!pkg.id) {
@@ -104,7 +104,16 @@ export const CartPackage: React.FC<CartPackageProps> = ({
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4 bg-first/20 p-4 rounded-[8px]">
-        <h2 className="text-xl font-semibold text-gray-800">{pkg.package}</h2>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800">
+            {pkg.package}
+            {pkg.guests && (
+              <span className="ml-2 text-sm font-normal text-gray-600">
+                ({pkg.guests} Gäste)
+              </span>
+            )}
+          </h2>
+        </div>
         <div className="flex items-center gap-4">
           <span className="text-lg font-bold text-gray-800">{pkg.price}€</span>
           <button

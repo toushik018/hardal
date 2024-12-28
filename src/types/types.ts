@@ -31,6 +31,7 @@ export interface PackageOrder {
   price: number;
   products: CategoryProducts;
   id?: string;
+  guests?: number;
 }
 
 export interface MenuContent {

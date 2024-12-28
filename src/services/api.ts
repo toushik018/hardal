@@ -140,10 +140,11 @@ export const api = createApi({
             }),
             invalidatesTags: ['Cart'],
         }),
-        addPackage: builder.mutation<any, void>({
-            query: () => ({
+        addPackage: builder.mutation<any, { guests: number }>({
+            query: (body) => ({
                 url: 'add-package',
                 method: 'POST',
+                body
             }),
             invalidatesTags: ['Cart'],
         }),

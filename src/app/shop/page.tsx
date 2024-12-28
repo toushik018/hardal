@@ -327,12 +327,10 @@ const Shop = () => {
     } else {
       // This is the last step, call addPackage before proceeding to cart
       try {
-        await addPackage().unwrap();
+        await addPackage({ guests: Number(guestCount) }).unwrap();
         router.push("/cart");
       } catch (error) {
-        toast.error(
-          "Fehler beim Hinzufügen des Pakets. Bitte versuchen Sie es erneut."
-        );
+        toast.error("Fehler beim Hinzufügen des Pakets");
       }
     }
   };
@@ -363,12 +361,10 @@ const Shop = () => {
     } else {
       // Last step, call addPackage before proceeding
       try {
-        await addPackage().unwrap();
+        await addPackage({ guests: Number(guestCount) }).unwrap();
         router.push("/cart");
       } catch (error) {
-        toast.error(
-          "Fehler beim Hinzufügen des Pakets. Bitte versuchen Sie es erneut."
-        );
+        toast.error("Fehler beim Hinzufügen des Pakets");
       }
     }
   };

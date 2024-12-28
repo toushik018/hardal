@@ -13,9 +13,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 import { ShoppingCart, Trash2, Loader2 } from "lucide-react";
-import {
-  CartSkeleton,
-} from "@/components/Skeletons/CartSkeleton";
+import { CartSkeleton } from "@/components/Skeletons/CartSkeleton";
 import { CartPackage } from "@/components/Cart/CartPackage";
 import { handleError } from "@/components/Cart/utils";
 import { CartProduct, LoadingState } from "@/types/types";
@@ -28,6 +26,7 @@ interface PackageOrder {
   package: string;
   price: number;
   products: CategoryProducts;
+  guests?: number;
 }
 
 interface MenuContent {
@@ -57,44 +56,51 @@ const Cart: React.FC = () => {
 
     try {
       // Convert order to array if it's an object
-      const orderArray = Array.isArray(cartData.cart.order) 
-        ? cartData.cart.order 
+      const orderArray = Array.isArray(cartData.cart.order)
+        ? cartData.cart.order
         : Object.values(cartData.cart.order);
 
-      return orderArray.flatMap((pkg: PackageOrder) => {
-        if (!pkg || typeof pkg !== "object") return [];
+      return orderArray
+        .map((pkg: PackageOrder) => {
+          if (!pkg || typeof pkg !== "object") return null;
 
-        const allProducts: CartProduct[] = [];
-        const categoryMap = new Map<string, string>();
+          const allProducts: CartProduct[] = [];
+          const categoryMap = new Map<string, string>();
 
-        if (cartData?.cart?.menu?.contents) {
-          cartData.cart.menu.contents.forEach((content: MenuContent) => {
-            if (content?.ids?.[0] !== undefined) {
-              categoryMap.set(content.ids[0].toString(), content.name);
-            }
-          });
-        }
+          if (cartData?.cart?.menu?.contents) {
+            cartData.cart.menu.contents.forEach((content: MenuContent) => {
+              if (content?.ids?.[0] !== undefined) {
+                categoryMap.set(content.ids[0].toString(), content.name);
+              }
+            });
+          }
 
-        if (pkg.products && typeof pkg.products === "object") {
-          Object.entries(pkg.products).forEach(([categoryId, products]) => {
-            if (Array.isArray(products)) {
-              products.forEach((product: CartProduct) => {
-                if (product && typeof product === "object") {
-                  const extendedProduct: CartProduct = {
-                    ...product,
-                    category_name: categoryMap.get(categoryId) || "Andere",
-                    package_name: pkg.package || "Unbekanntes Paket",
-                    package_price: typeof pkg.price === "number" ? pkg.price : 0,
-                  };
-                  allProducts.push(extendedProduct);
-                }
-              });
-            }
-          });
-        }
+          if (pkg.products && typeof pkg.products === "object") {
+            Object.entries(pkg.products).forEach(([categoryId, products]) => {
+              if (Array.isArray(products)) {
+                products.forEach((product: CartProduct) => {
+                  if (product && typeof product === "object") {
+                    const extendedProduct: CartProduct = {
+                      ...product,
+                      category_name: categoryMap.get(categoryId) || "Andere",
+                      package_name: pkg.package || "Unbekanntes Paket",
+                      package_price:
+                        typeof pkg.price === "number" ? pkg.price : 0,
+                    };
+                    allProducts.push(extendedProduct);
+                  }
+                });
+              }
+            });
+          }
 
-        return allProducts;
-      });
+          return {
+            ...pkg,
+            products: allProducts,
+            guests: pkg.guests,
+          };
+        })
+        .filter(Boolean);
     } catch (error) {
       console.error("Error processing cart items:", error);
       return [];
@@ -103,16 +109,46 @@ const Cart: React.FC = () => {
 
   const { subTotal, totalPrice } = useMemo(() => {
     try {
-      const totalItem = cartData?.totals?.find(
-        (item: { title: string }) => item.title === "Total"
-      );
-      const subTotalItem = cartData?.totals?.find(
-        (item: { title: string }) => item.title === "Sub-Total"
-      );
+      // const totalItem = cartData?.totals?.find(
+      //   (item: { title: string }) => item.title === "Total"
+      // );
+      // const subTotalItem = cartData?.totals?.find(
+      //   (item: { title: string }) => item.title === "Sub-Total"
+      // );
+
+      let calculatedTotal = 0;
+
+      // Process each package
+      if (cartData?.cart?.order) {
+        const packages = Array.isArray(cartData.cart.order)
+          ? cartData.cart.order
+          : Object.values(cartData.cart.order);
+
+        packages.forEach((pkg: PackageOrder) => {
+          // Base package price = package price * number of guests
+          const basePackagePrice = pkg.price * (pkg.guests || 1);
+
+          // Calculate extras total
+          let extrasTotal = 0;
+          Object.values(pkg.products).forEach((products) => {
+            products.forEach((product) => {
+              // Check if it's an extra: quantity is 10 and has a price
+              if (Number(product.quantity) === 10 && product.price > 0) {
+                extrasTotal += product.total;
+              }
+            });
+          });
+
+          // Add this package's total to the overall total
+          calculatedTotal += basePackagePrice + extrasTotal;
+        });
+      }
+
+      const formattedTotal = calculatedTotal.toFixed(2) + "€";
 
       return {
-        subTotal: subTotalItem?.text || "0.00€",
-        totalPrice: totalItem?.text || "0.00€",
+        subTotal: formattedTotal,
+        totalPrice: formattedTotal,
       };
     } catch (error) {
       console.error("Error calculating totals:", error);
@@ -199,7 +235,26 @@ const Cart: React.FC = () => {
   const handleCheckout = async () => {
     setIsProcessing(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Format cart data for checkout
+      const formattedPackages = Array.isArray(cartData?.cart?.order)
+        ? cartData.cart.order
+        : Object.values(cartData?.cart?.order || {});
+
+      // Make sure guest counts are included in the packages
+      const packagesWithGuests = formattedPackages.map((pkg: any) => ({
+        ...pkg,
+        guests: pkg.guests || null,
+      }));
+
+      // Store the formatted data for use in checkout
+      localStorage.setItem(
+        "checkoutData",
+        JSON.stringify({
+          packages: packagesWithGuests,
+          totals: cartData?.totals,
+        })
+      );
+
       router.push("/checkout");
     } catch (error) {
       toast.error("Fehler beim Weiterleiten zur Kasse");
@@ -305,35 +360,17 @@ const Cart: React.FC = () => {
           ) : (
             <>
               <AnimatePresence mode="wait">
-                {Array.isArray(cartData?.cart?.order) 
-                  ? cartData.cart.order.map((pkg: PackageOrder, index: number) => (
-                      <motion.div
-                        key={`${pkg.package}-${index}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <CartPackage
-                          pkg={pkg}
-                          cartData={cartData}
-                          onIncrement={handleIncrement}
-                          onDecrement={handleDecrement}
-                          onRemove={handleRemove}
-                          loadingStates={loadingStates}
-                        />
-                      </motion.div>
-                    ))
-                  : Object.values(cartData?.cart?.order || {}).map((pkg, index) => {
-                      const packageOrder = pkg as PackageOrder;
-                      return (
+                {Array.isArray(cartData?.cart?.order)
+                  ? cartData.cart.order.map(
+                      (pkg: PackageOrder, index: number) => (
                         <motion.div
-                          key={`${packageOrder.package}-${index}`}
+                          key={`${pkg.package}-${index}`}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                         >
                           <CartPackage
-                            pkg={packageOrder}
+                            pkg={pkg}
                             cartData={cartData}
                             onIncrement={handleIncrement}
                             onDecrement={handleDecrement}
@@ -341,9 +378,30 @@ const Cart: React.FC = () => {
                             loadingStates={loadingStates}
                           />
                         </motion.div>
-                      );
-                    })
-                }
+                      )
+                    )
+                  : Object.values(cartData?.cart?.order || {}).map(
+                      (pkg, index) => {
+                        const packageOrder = pkg as PackageOrder;
+                        return (
+                          <motion.div
+                            key={`${packageOrder.package}-${index}`}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          >
+                            <CartPackage
+                              pkg={packageOrder}
+                              cartData={cartData}
+                              onIncrement={handleIncrement}
+                              onDecrement={handleDecrement}
+                              onRemove={handleRemove}
+                              loadingStates={loadingStates}
+                            />
+                          </motion.div>
+                        );
+                      }
+                    )}
               </AnimatePresence>
 
               <motion.div
