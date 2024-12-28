@@ -13,20 +13,6 @@ import { Package } from "@/types/package";
 import { clearToken } from "@/redux/slices/sessionSlice";
 import { useRouter } from "next/navigation";
 
-// Separate Skeleton component
-const SkeletonCard = () => (
-  <div className="animate-pulse bg-white rounded-2xl h-[500px] overflow-hidden">
-    <div className="h-48 bg-gray-200" />
-    <div className="p-6">
-      <div className="bg-gray-50 rounded-xl p-4 mb-6">
-        <div className="h-4 bg-gray-200 rounded w-2/3 mb-3" />
-        <div className="h-4 bg-gray-200 rounded w-1/2" />
-      </div>
-      <div className="h-12 bg-gray-200 rounded-xl" />
-    </div>
-  </div>
-);
-
 const Section2 = () => {
   const isInitialized = useSelector(
     (state: RootState) => state.session.isInitialized
@@ -101,14 +87,7 @@ const Section2 = () => {
 
         {/* Content Section */}
         <div className="min-h-[600px] relative z-20">
-          {isLoading ? (
-            // Simple skeleton with fixed count
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {[1, 2, 3, 4, 5].map((index) => (
-                <SkeletonCard key={index} />
-              ))}
-            </div>
-          ) : error ? (
+          {error ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

@@ -2,13 +2,64 @@
 
 import Image from "next/image";
 import { Package } from "@/types/package";
+import { useGetMenuContentQuery } from "@/services/api";
+
+interface MenuContent {
+  name: string;
+  ids: number[];
+  count: number;
+}
 
 interface VerticalCardProps {
   packageData: Package;
   onSelect?: (packageData: Package) => void;
 }
 
+// Skeleton component
+const SkeletonCard = () => (
+  <div className="animate-pulse bg-white rounded-2xl h-[500px] overflow-hidden">
+    {/* Image Skeleton */}
+    <div className="h-48 bg-gray-200" />
+
+    {/* Content Skeleton */}
+    <div className="p-6">
+      {/* Package Contents Skeleton */}
+      <div className="mb-6">
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-3" />
+        <div className="space-y-2">
+          {[1, 2, 3].map((index) => (
+            <div key={index} className="flex items-center justify-between">
+              <div className="h-4 bg-gray-200 rounded w-24" />
+              <div className="h-4 bg-gray-200 rounded w-8" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Price Info Skeleton */}
+      <div className="bg-gray-50 rounded-xl p-4 mb-6">
+        <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
+          <div className="h-4 bg-gray-200 rounded w-20" />
+          <div className="h-6 bg-gray-200 rounded w-16" />
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="h-4 bg-gray-200 rounded w-24" />
+          <div className="h-5 bg-gray-200 rounded w-20" />
+        </div>
+      </div>
+
+      {/* Button Skeleton */}
+      <div className="h-12 bg-gray-200 rounded-xl" />
+    </div>
+  </div>
+);
+
 const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
+  const { data: menuContentData, isLoading } = useGetMenuContentQuery(
+    packageData.id
+  );
+  const menuContents = menuContentData?.contents || [];
+
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -16,6 +67,10 @@ const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
       onSelect(packageData);
     }
   };
+
+  if (isLoading) {
+    return <SkeletonCard />;
+  }
 
   return (
     <div
@@ -46,6 +101,28 @@ const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
 
       {/* Card Content */}
       <div className="p-6">
+        {/* Menu Contents */}
+        {menuContents.length > 0 && (
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-gray-500 mb-3">
+              Paket Übersicht
+            </h4>
+            <div className="space-y-2">
+              {menuContents.map((content: MenuContent, index: number) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="text-gray-600">{content.name}</span>
+                  <span className="font-medium text-gray-800">
+                    {content.count}x
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Price Info */}
         <div className="bg-gray-50 rounded-xl p-4 mb-6">
           <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
