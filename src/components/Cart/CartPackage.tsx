@@ -2,8 +2,7 @@ import React from "react";
 import { PackageOrder, MenuContent, CartProduct } from "../../types/types";
 import { CartItem } from "./CartItem";
 import { Trash2, Loader2 } from "lucide-react";
-import { useDeletePackageMutation } from "@/services/api";
-import { toast } from "sonner";
+import { getMenuContents } from "@/constants/categories";
 
 interface CartPackageProps {
   pkg: PackageOrder;
@@ -12,7 +11,21 @@ interface CartPackageProps {
   onDecrement: (item: CartProduct) => void;
   onRemove: (item: CartProduct) => void;
   loadingStates: { [key: string]: boolean };
+  isDeleting: boolean;
+  handleDeletePackage: () => void;
 }
+
+const getPackageMenuId = (packageName: string): number | undefined => {
+  const packageMap: { [key: string]: number } = {
+    "Classic Menü": 1,
+    "Signature Menü": 2,
+    "Exclusive Menü": 3,
+    "Fingerfood Menü": 4,
+    "BBQ Menü": 5,
+    "Fisch Menü": 6,
+  };
+  return packageMap[packageName];
+};
 
 export const CartPackage: React.FC<CartPackageProps> = ({
   pkg,
@@ -21,83 +34,77 @@ export const CartPackage: React.FC<CartPackageProps> = ({
   onDecrement,
   onRemove,
   loadingStates,
+  isDeleting,
+  handleDeletePackage,
 }) => {
-  const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
-
-  const handleDeletePackage = async () => {
-    try {
-      if (!pkg.id) {
-        toast.error("Paket ID nicht gefunden");
-        return;
-      }
-      const response = await deletePackage({ id: pkg.id }).unwrap();
-      console.log(response);
-      toast.success(`${pkg.package} wurde erfolgreich entfernt`);
-    } catch (error) {
-      toast.error("Fehler beim Entfernen des Pakets");
-    }
-  };
-
   const renderProducts = () => {
     if (!pkg?.products) {
       console.warn("No products found in package:", pkg);
       return null;
     }
 
-    if (cartData?.cart?.menu?.contents) {
-      return (
-        <>
-          {cartData.cart.menu.contents.map((content: MenuContent) => {
-            const categoryId = content.ids?.[0]?.toString();
-            const categoryProducts = categoryId
-              ? pkg.products[categoryId]
-              : null;
+    // Group products by category
+    const groupedProducts: { [key: string]: CartProduct[] } = {};
 
-            if (!categoryProducts?.length) return null;
+    // Process each product and group by category
+    Object.entries(pkg.products).forEach(([categoryId, products]) => {
+      if (!Array.isArray(products)) return;
 
-            return (
-              <div key={content.name} className="mb-6">
-                <h3 className="text-lg font-medium text-gray-700 mb-3">
-                  {content.name}
-                </h3>
-                {categoryProducts.map((item: CartProduct) => (
-                  <CartItem
-                    key={item.cart_id}
-                    item={item}
-                    onIncrement={onIncrement}
-                    onDecrement={onDecrement}
-                    onRemove={onRemove}
-                    categoryName={content.name}
-                    isLoading={loadingStates[item.cart_id]}
-                  />
-                ))}
-              </div>
-            );
-          })}
-        </>
-      );
-    }
+      // Get category name from menu contents
+      let categoryName = "Andere";
 
-    const allProducts = Object.values(pkg.products).flat();
-    if (!allProducts.length) {
-      console.warn("No products found in package after flattening:", pkg);
-      return null;
-    }
+      // Get menu ID from package name instead of using pkg.id
+      const menuId = getPackageMenuId(pkg.package);
+      const menuContents =
+        cartData?.cart?.menu?.contents ||
+        (menuId ? getMenuContents(menuId) : []);
+
+      if (menuContents?.length > 0) {
+        const category = menuContents.find((content: { ids: number[]; }) =>
+          content.ids.includes(parseInt(categoryId))
+        );
+        if (category?.name) {
+          categoryName = category.name;
+        }
+      }
+
+      // Initialize category array if needed
+      if (!groupedProducts[categoryName]) {
+        groupedProducts[categoryName] = [];
+      }
+
+      // Add products to category
+      groupedProducts[categoryName].push(...products);
+    });
+
+    console.log("Package ID:", pkg.id);
+    console.log("Menu Contents from API:", cartData?.cart?.menu?.contents);
+    console.log(
+      "Fallback Menu Contents:",
+      pkg.id ? getMenuContents(parseInt(pkg.id)) : []
+    );
 
     return (
-      <div className="space-y-4">
-        {allProducts.map((item: CartProduct) => (
-          <CartItem
-            key={item.cart_id}
-            item={item}
-            onIncrement={onIncrement}
-            onDecrement={onDecrement}
-            onRemove={onRemove}
-            categoryName=""
-            isLoading={loadingStates[item.cart_id]}
-          />
+      <>
+        {Object.entries(groupedProducts).map(([categoryName, products]) => (
+          <div key={categoryName} className="mb-6">
+            <h3 className="text-lg font-medium text-gray-700 mb-3">
+              {categoryName}
+            </h3>
+            {products.map((item: CartProduct) => (
+              <CartItem
+                key={item.cart_id}
+                item={item}
+                onIncrement={onIncrement}
+                onDecrement={onDecrement}
+                onRemove={onRemove}
+                categoryName={categoryName}
+                isLoading={loadingStates[item.cart_id]}
+              />
+            ))}
+          </div>
         ))}
-      </div>
+      </>
     );
   };
 

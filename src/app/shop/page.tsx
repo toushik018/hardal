@@ -242,11 +242,32 @@ const Shop = () => {
     }
   }, [currentCategory?.name, currentCount]);
 
-  // Handle modal visibility and state updates
+  const shouldShowExtraModal = (categoryName: string) => {
+    // Never show modal for Extras category
+    if (categoryName === "Extras") return false;
+
+    const categoryState = categoryStates[categoryName];
+    const currentCategoryData = menuContents?.find(
+      (c: { name: string }) => c.name === categoryName
+    );
+    const requiredCount = currentCategoryData?.count || 0;
+
+    return (
+      currentCount >= requiredCount &&
+      !categoryState?.hasShownModal &&
+      currentCount > (categoryState?.lastCount || 0)
+    );
+  };
+
+  // Update modal visibility logic
   useEffect(() => {
     if (!currentCategory) return;
 
     const categoryName = currentCategory.name;
+
+    // Skip modal logic for Extras category
+    if (categoryName === "Extras") return;
+
     const requiredCount = currentCategory.count || 0;
     const categoryState = categoryStates[categoryName];
 
@@ -263,11 +284,14 @@ const Shop = () => {
         }));
       }
       // Show modal ONLY when conditions are met AND hasn't been shown yet
-      else if (
-        currentCount >= requiredCount &&
-        !categoryState.hasShownModal &&
-        currentCount > categoryState.lastCount
-      ) {
+      // else if (
+      //   currentCount >= requiredCount &&
+      //   !categoryState.hasShownModal &&
+      //   currentCount > categoryState.lastCount
+      // ) {
+
+      // Show modal only for non-Extra categories
+      else if (shouldShowExtraModal(categoryName)) {
         dispatch(showExtraModal());
         setCategoryStates((prev) => ({
           ...prev,
@@ -278,15 +302,15 @@ const Shop = () => {
         }));
       }
       // Just update last count without showing modal
-      else if (currentCount !== categoryState.lastCount) {
-        setCategoryStates((prev) => ({
-          ...prev,
-          [categoryName]: {
-            ...prev[categoryName],
-            lastCount: currentCount,
-          },
-        }));
-      }
+      // else if (currentCount !== categoryState.lastCount) {
+      //   setCategoryStates((prev) => ({
+      //     ...prev,
+      //     [categoryName]: {
+      //       ...prev[categoryName],
+      //       lastCount: currentCount,
+      //     },
+      //   }));
+      // }
     }
   }, [currentCategory?.name, currentCount]);
 
@@ -391,6 +415,30 @@ const Shop = () => {
 
   const [error, setError] = useState<string | null>(null);
 
+  const handleStepClick = (targetStep: number) => {
+    // If trying to go back, always allow it
+    if (targetStep < activeStep) {
+      setActiveStep(targetStep);
+      return;
+    }
+
+    // If current step is Extras, allow navigation
+    if (currentCategory?.name === "Extras") {
+      setActiveStep(targetStep);
+      return;
+    }
+
+    // Check if current category requirements are met
+    const requiredCount = currentCategory?.count || 0;
+    if (getCurrentCategoryCount() >= requiredCount) {
+      setActiveStep(targetStep);
+    } else {
+      toast.error(
+        `Bitte wählen Sie ${requiredCount} Produkte aus der Kategorie "${currentCategory?.name}" aus.`
+      );
+    }
+  };
+
   if (isCartLoading || isMenuContentLoading || isLoadingProducts || isLoading) {
     return <ShopSkeleton />;
   }
@@ -446,11 +494,12 @@ const Shop = () => {
 
             {/* Use Stepper Component */}
             <Stepper
-              steps={menuContents}
+              steps={menuContents || []}
               activeStep={activeStep}
               onPrevious={handlePrevious}
               onNext={handleNext}
-              isLastStep={activeStep === menuContents.length - 1}
+              getCurrentCategoryCount={() => getCurrentCategoryCount()} 
+              onStepClick={handleStepClick}
             />
           </div>
         </div>

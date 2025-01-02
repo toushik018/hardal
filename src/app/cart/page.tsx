@@ -17,12 +17,20 @@ import { CartSkeleton } from "@/components/Skeletons/CartSkeleton";
 import { CartPackage } from "@/components/Cart/CartPackage";
 import { handleError } from "@/components/Cart/utils";
 import { CartProduct, LoadingState } from "@/types/types";
+import { getPackageMenuId } from "@/utils/menuUtils";
+import { getMenuContents } from "@/constants/categories";
+import {
+  calculateExtrasTotal,
+  calculateTotals,
+  formatExtrasTotal,
+} from "@/components/Cart/CartPriceCalculation";
 
 interface CategoryProducts {
   [key: string]: CartProduct[];
 }
 
 interface PackageOrder {
+  id: string;
   package: string;
   price: number;
   products: CategoryProducts;
@@ -47,8 +55,10 @@ const Cart: React.FC = () => {
   const [removeProduct] = useRemoveProductMutation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingStates, setLoadingStates] = useState<LoadingState>({});
-  const [deletePackage, { isLoading: isClearing }] = useDeletePackageMutation();
-
+  const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
+  const [deletingPackageId, setDeletingPackageId] = useState<string | null>(
+    null
+  );
   const cartItems = useMemo(() => {
     if (!cartData?.cart?.order) {
       return [];
@@ -67,22 +77,27 @@ const Cart: React.FC = () => {
           const allProducts: CartProduct[] = [];
           const categoryMap = new Map<string, string>();
 
+          // If menu exists, use it to map all category IDs
           if (cartData?.cart?.menu?.contents) {
             cartData.cart.menu.contents.forEach((content: MenuContent) => {
-              if (content?.ids?.[0] !== undefined) {
-                categoryMap.set(content.ids[0].toString(), content.name);
-              }
+              content.ids.forEach((id) => {
+                categoryMap.set(id.toString(), content.name);
+              });
             });
           }
 
+          // Process all products in the package
           if (pkg.products && typeof pkg.products === "object") {
             Object.entries(pkg.products).forEach(([categoryId, products]) => {
               if (Array.isArray(products)) {
                 products.forEach((product: CartProduct) => {
                   if (product && typeof product === "object") {
+                    const categoryName =
+                      categoryMap.get(categoryId) || "Andere";
+
                     const extendedProduct: CartProduct = {
                       ...product,
-                      category_name: categoryMap.get(categoryId) || "Andere",
+                      category_name: categoryName,
                       package_name: pkg.package || "Unbekanntes Paket",
                       package_price:
                         typeof pkg.price === "number" ? pkg.price : 0,
@@ -94,8 +109,19 @@ const Cart: React.FC = () => {
             });
           }
 
+          // Group products by category for display
+          const groupedProducts = allProducts.reduce((acc, product) => {
+            const category = product.category_name || "Andere";
+            if (!acc[category]) {
+              acc[category] = [];
+            }
+            acc[category].push(product);
+            return acc;
+          }, {} as { [key: string]: CartProduct[] });
+
           return {
             ...pkg,
+            groupedProducts,
             products: allProducts,
             guests: pkg.guests,
           };
@@ -107,54 +133,20 @@ const Cart: React.FC = () => {
     }
   }, [cartData]);
 
-  const { subTotal, totalPrice } = useMemo(() => {
-    try {
-      // const totalItem = cartData?.totals?.find(
-      //   (item: { title: string }) => item.title === "Total"
-      // );
-      // const subTotalItem = cartData?.totals?.find(
-      //   (item: { title: string }) => item.title === "Sub-Total"
-      // );
+  // Calculate extras total first
+  const extrasTotal = useMemo(() => calculateExtrasTotal(cartData), [cartData]);
 
-      let calculatedTotal = 0;
+  // Format the extras total for display
+  const formattedExtrasTotal = useMemo(
+    () => formatExtrasTotal(extrasTotal),
+    [extrasTotal]
+  );
 
-      // Process each package
-      if (cartData?.cart?.order) {
-        const packages = Array.isArray(cartData.cart.order)
-          ? cartData.cart.order
-          : Object.values(cartData.cart.order);
-
-        packages.forEach((pkg: PackageOrder) => {
-          // Base package price = package price * number of guests
-          const basePackagePrice = pkg.price * (pkg.guests || 1);
-
-          // Calculate extras total
-          let extrasTotal = 0;
-          Object.values(pkg.products).forEach((products) => {
-            products.forEach((product) => {
-              // Check if it's an extra: quantity is 10 and has a price
-              if (Number(product.quantity) === 10 && product.price > 0) {
-                extrasTotal += product.total;
-              }
-            });
-          });
-
-          // Add this package's total to the overall total
-          calculatedTotal += basePackagePrice + extrasTotal;
-        });
-      }
-
-      const formattedTotal = calculatedTotal.toFixed(2) + "€";
-
-      return {
-        subTotal: formattedTotal,
-        totalPrice: formattedTotal,
-      };
-    } catch (error) {
-      console.error("Error calculating totals:", error);
-      return { subTotal: "0.00€", totalPrice: "0.00€" };
-    }
-  }, [cartData]);
+  // Then calculate subtotal and total
+  const { subTotal, totalPrice } = useMemo(
+    () => calculateTotals(cartData, extrasTotal),
+    [cartData, extrasTotal]
+  );
 
   const handleIncrement = async (item: CartProduct) => {
     if (!item?.cart_id) {
@@ -273,6 +265,23 @@ const Cart: React.FC = () => {
     }
   };
 
+  const handleDeletePackage = async (
+    packageId: string,
+    packageName: string
+  ) => {
+    try {
+      setDeletingPackageId(packageId);
+      await deletePackage({ id: packageId }).unwrap();
+      toast.success(`${packageName} wurde erfolgreich entfernt`);
+      await refetch(); // Refetch cart data after deletion
+    } catch (error) {
+      toast.error("Fehler beim Entfernen des Pakets");
+      console.error("Error deleting package:", error);
+    } finally {
+      setDeletingPackageId(null);
+    }
+  };
+
   if (isCartLoading) {
     return (
       <div className="min-h-screen py-12 px-4 md:px-8 bg-gray-50">
@@ -318,12 +327,12 @@ const Cart: React.FC = () => {
             {cartItems.length > 0 && (
               <button
                 onClick={handleClearCart}
-                disabled={isClearing}
+                disabled={isDeleting}
                 className="flex items-center gap-2 px-4 py-2 text-red-600 
                          bg-red-50 hover:bg-red-100 rounded-xl transition-colors
                          disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isClearing ? (
+                {isDeleting ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Wird geleert...</span>
@@ -376,6 +385,12 @@ const Cart: React.FC = () => {
                             onDecrement={handleDecrement}
                             onRemove={handleRemove}
                             loadingStates={loadingStates}
+                            isDeleting={
+                              isDeleting && deletingPackageId === pkg.id
+                            }
+                            handleDeletePackage={() =>
+                              handleDeletePackage(pkg.id!, pkg.package)
+                            }
                           />
                         </motion.div>
                       )
@@ -397,6 +412,16 @@ const Cart: React.FC = () => {
                               onDecrement={handleDecrement}
                               onRemove={handleRemove}
                               loadingStates={loadingStates}
+                              isDeleting={
+                                isDeleting &&
+                                deletingPackageId === packageOrder.id
+                              }
+                              handleDeletePackage={() =>
+                                handleDeletePackage(
+                                  packageOrder.id!,
+                                  packageOrder.package
+                                )
+                              }
                             />
                           </motion.div>
                         );
@@ -416,10 +441,17 @@ const Cart: React.FC = () => {
                     <span className="text-first">{subTotal}</span>
                   </div>
                   <div>
+                    Extras:{" "}
+                    <span className="text-first">{formattedExtrasTotal}</span>
+                  </div>
+                  <div>
                     Gesamt: <span className="text-first">{totalPrice}</span>
                   </div>
                 </div>
-                <Link href="/#menu-section" className="inline-block bg-second hover:bg-second/80 text-white px-8 py-3 rounded-[8px] font-semibold transition-all hover:shadow-lg transform hover:-translate-y-1 disabled:transform-none disabled:hover:shadow-none disabled:opacity-75">
+                <Link
+                  href="/#menu-section"
+                  className="inline-block bg-second hover:bg-second/80 text-white px-8 py-3 rounded-[8px] font-semibold transition-all hover:shadow-lg transform hover:-translate-y-1 disabled:transform-none disabled:hover:shadow-none disabled:opacity-75"
+                >
                   Zurück zu den Menüs
                 </Link>
                 <button
