@@ -54,6 +54,10 @@ const SkeletonCard = () => (
   </div>
 );
 
+const getImageSrc = (id: number) => {
+  return `/images/package${id}.jpg`;
+};
+
 const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
   const { data: menuContentData, isLoading } = useGetMenuContentQuery(
     packageData.id
@@ -80,7 +84,7 @@ const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
       {/* Card Header */}
       <div className="relative h-48 overflow-hidden">
         <Image
-          src="/images/package.jpg"
+          src={getImageSrc(packageData.id)}
           alt={packageData.name}
           width={800}
           height={400}
