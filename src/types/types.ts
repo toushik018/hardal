@@ -32,6 +32,7 @@ export interface PackageOrder {
   products: CategoryProducts;
   id?: string;
   guests?: number;
+  groupedProducts?: { [key: string]: CartProduct[] };
 }
 
 export interface MenuContent {
@@ -47,4 +48,3 @@ export type LoadingState = {
 interface CartOrder {
   [key: string]: PackageOrder;
 }
-  

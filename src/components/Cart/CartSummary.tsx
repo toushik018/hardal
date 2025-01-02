@@ -31,10 +31,19 @@ const CartSummary: React.FC<CartSummaryProps> = ({
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [removeProduct] = useRemoveProductMutation();
 
+  const isExtrasCategory = currentCategory?.name === "Extras";
+
   const handleNext = async () => {
     setIsLoading(true);
     try {
-      await onNext();
+      if (
+        isExtrasCategory ||
+        getCurrentCategoryCount() >= (currentCategory?.count || 0)
+      ) {
+        await onNext();
+      } else {
+        toast.error(`Bitte wählen Sie ${currentCategory?.count} Produkte aus.`);
+      }
     } catch (error) {
       console.error("Navigation error:", error);
     } finally {
@@ -65,7 +74,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-6">Bestellübersicht</h2>
           <ScrollArea className="h-[300px] lg:h-[400px] mb-6">
-            {(!cartData?.products || cartData.products.length === 0) ? (
+            {!cartData?.products || cartData.products.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-4">
                 <p className="text-lg font-medium text-gray-900 mb-2">
                   Ihr Warenkorb ist leer
@@ -159,7 +168,12 @@ const CartSummary: React.FC<CartSummaryProps> = ({
             </button>
             <button
               onClick={handleNext}
-              disabled={isLoading}
+              // disabled={isLoading}
+              disabled={
+                isLoading ||
+                (!isExtrasCategory &&
+                  getCurrentCategoryCount() < (currentCategory?.count || 0))
+              }
               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-yellow-400 rounded-xl text-gray-900 font-medium hover:bg-yellow-500 transition-colors disabled:opacity-70 disabled:hover:bg-yellow-400"
             >
               {isLoading ? (

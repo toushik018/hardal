@@ -2,6 +2,8 @@ import { jsPDF } from 'jspdf';
 import autoTable, { RowInput } from 'jspdf-autotable';
 import { CheckoutFormData } from '@/components/Checkout/CheckoutForm';
 import loadImageAsBase64 from '@/utils/loadImageInPdf';
+import { getPackageMenuId } from '@/utils/menuUtils';
+import { getMenuContents } from '@/constants/categories';
 
 interface Product {
     name: string;
@@ -101,13 +103,15 @@ export const generateOrderPDF = async ({
     doc.text('Bestelldetails', 15, 80);
 
     const tableData: RowInput[] = [];
-    let calculatedTotal = 0;
+    let calculatedSubTotal = 0;
+    let extrasTotal = 0;
 
     // Process each package
     if (Array.isArray(orderData.packages)) {
         orderData.packages.forEach((pkg, index) => {
+            // Base package price = package price * number of guests
             const basePackagePrice = pkg.price * (pkg.guests || 1);
-            let extrasTotal = 0;
+            let productsOver10Total = 0;
 
             // Add package header
             tableData.push([
@@ -133,41 +137,84 @@ export const generateOrderPDF = async ({
                 },
             ]);
 
-            const isMenuPackage = orderData.menu?.name === pkg.package;
+            // Get menu contents either from API or fallback
+            const menuId = getPackageMenuId(pkg.package);
+            const menuContents =
+                orderData.menu?.contents ||
+                (menuId ? getMenuContents(menuId) : []);
 
-            if (isMenuPackage && orderData.menu) {
-                orderData.menu.contents.forEach(category => {
-                    category.ids.forEach(categoryId => {
-                        const categoryProducts = pkg.products[categoryId];
-                        if (Array.isArray(categoryProducts)) {
-                            categoryProducts.forEach(product => {
-                                if (Number(product.quantity) === 10 && product.price > 0) {
-                                    extrasTotal += product.total;
-                                }
-                                const price = product.total > 0 ? `${product.total}€` : `${product.price}€`;
-                                tableData.push([product.name, product.quantity, price]);
-                            });
+            // Get extra category IDs
+            const extraIds = menuContents?.find(
+                content => content.name === "Extras"
+            )?.ids || ["63", "66", "69"];
+
+            // Process products
+            if (pkg.products) {
+                // Group products by category
+                const groupedProducts: { [key: string]: Array<Product> } = {};
+
+                Object.entries(pkg.products).forEach(([categoryId, products]) => {
+                    if (Array.isArray(products)) {
+                        // Get category name from menu contents
+                        let categoryName = "Andere";
+                        const category = menuContents?.find((content) =>
+                            content.ids.includes(parseInt(categoryId))
+                        );
+                        if (category?.name) {
+                            categoryName = category.name;
                         }
+
+                        // Initialize category array if needed
+                        if (!groupedProducts[categoryName]) {
+                            groupedProducts[categoryName] = [];
+                        }
+
+                        products.forEach((product) => {
+                            // Calculate totals
+                            const quantity = Number(product.quantity);
+                            if (quantity >= 10 && quantity % 10 === 0 && product.price > 0) {
+                                productsOver10Total += product.total;
+                            }
+                            // Add to extras total if in extra categories and not ≥10
+                            else if (extraIds.includes(parseInt(categoryId) as never)) {
+                                extrasTotal += product.total || 0;
+                            }
+
+                            // Add to grouped products for display
+                            groupedProducts[categoryName].push(product);
+                        });
+                    }
+                });
+
+                // Add products to table by category
+                Object.entries(groupedProducts).forEach(([categoryName, products]) => {
+                    // Add category header
+                    tableData.push([
+                        {
+                            content: categoryName,
+                            colSpan: 3,
+                            styles: {
+                                fontStyle: 'bold',
+                                fillColor: [255, 244, 231],
+                                fontSize: 10,
+                                textColor: [33, 37, 41]
+                            },
+                        },
+                    ]);
+
+                    // Add products in this category
+                    products.forEach((product) => {
+                        const price = product.total > 0 ? `${product.total}€` : `${product.price}€`;
+                        tableData.push([product.name, product.quantity, price]);
                     });
                 });
-            } else {
-                if (pkg.products) {
-                    Object.entries(pkg.products).forEach(([_, products]) => {
-                        if (Array.isArray(products)) {
-                            products.forEach((product) => {
-                                if (Number(product.quantity) === 10 && product.price > 0) {
-                                    extrasTotal += product.total;
-                                }
-                                const price = product.total > 0 ? `${product.total}€` : `${product.price}€`;
-                                tableData.push([product.name, product.quantity, price]);
-                            });
-                        }
-                    });
-                }
             }
 
-            const packageTotal = basePackagePrice + extrasTotal;
-            calculatedTotal += packageTotal;
+            // Calculate package total (base price + products ≥10)
+            const packageTotal = basePackagePrice + productsOver10Total;
+            calculatedSubTotal += packageTotal;
+
+            // Add package subtotal
             tableData.push([
                 {
                     content: `Zwischensumme`,
@@ -189,7 +236,7 @@ export const generateOrderPDF = async ({
                 },
             ]);
 
-            // Add a smaller spacer row between packages
+            // Add spacer between packages
             if (index < orderData.packages.length - 1) {
                 tableData.push([{ content: '', colSpan: 3, styles: { minCellHeight: 3 } }]);
             }
@@ -242,13 +289,19 @@ export const generateOrderPDF = async ({
         },
     });
 
-    // Total
+    // Updated totals section
     const finalY = (doc as any).lastAutoTable.finalY + 5;
     doc.setFillColor(240, 240, 240);
-    doc.rect(15, finalY, 180, 8, 'F');
+    doc.rect(15, finalY, 180, 25, 'F');
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Gesamtbetrag: ${calculatedTotal.toFixed(2)}€`, 20, finalY + 5.5);
+
+    // Show subtotal
+    doc.text(`Zwischensumme: ${calculatedSubTotal.toFixed(2)}€`, 20, finalY + 5.5);
+    // Show extras total
+    doc.text(`Extras: ${extrasTotal.toFixed(2)}€`, 20, finalY + 12.5);
+    // Show final total
+    doc.text(`Gesamtbetrag: ${(calculatedSubTotal + extrasTotal).toFixed(2)}€`, 20, finalY + 19.5);
 
     // Footer
     const footerY = doc.internal.pageSize.height - 10;

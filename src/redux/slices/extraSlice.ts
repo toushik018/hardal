@@ -48,6 +48,10 @@ const extraSlice = createSlice({
       state.showModal = false;
     },
     setExtraMode: (state, action: PayloadAction<boolean>) => {
+      if (state.selectedProduct.categoryName === "Extras") {
+        state.isExtraMode = false;
+        return;
+      }
       state.isExtraMode = action.payload;
     }
   }
@@ -60,8 +64,8 @@ export const selectError = (state: RootState) => state.extra.error;
 export const selectShowModal = (state: RootState) => state.extra.showModal;
 export const selectIsExtraMode = (state: RootState) => state.extra.isExtraMode;
 
-export const { 
-  setSelectedProduct, 
+export const {
+  setSelectedProduct,
   clearSelectedProduct,
   setIsAddingExtra,
   setError,
