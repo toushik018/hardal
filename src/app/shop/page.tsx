@@ -439,6 +439,13 @@ const Shop = () => {
     }
   };
 
+  useEffect(() => {
+    if (currentCategory?.name === "Extras") {
+      // Disable extra mode when in Extras category
+      dispatch(setExtraMode(false));
+    }
+  }, [currentCategory?.name, dispatch]);
+
   if (isCartLoading || isMenuContentLoading || isLoadingProducts || isLoading) {
     return <ShopSkeleton />;
   }
@@ -498,7 +505,7 @@ const Shop = () => {
               activeStep={activeStep}
               onPrevious={handlePrevious}
               onNext={handleNext}
-              getCurrentCategoryCount={() => getCurrentCategoryCount()} 
+              getCurrentCategoryCount={() => getCurrentCategoryCount()}
               onStepClick={handleStepClick}
             />
           </div>
