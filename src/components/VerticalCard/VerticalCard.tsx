@@ -54,6 +54,10 @@ const SkeletonCard = () => (
   </div>
 );
 
+const getImageSrc = (id: number) => {
+  return `/images/package${id}.jpg`;
+};
+
 const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
   const { data: menuContentData, isLoading } = useGetMenuContentQuery(
     packageData.id
@@ -80,7 +84,7 @@ const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
       {/* Card Header */}
       <div className="relative h-48 overflow-hidden">
         <Image
-          src="/images/package.jpg"
+          src={getImageSrc(packageData.id)}
           alt={packageData.name}
           width={800}
           height={400}
@@ -113,10 +117,7 @@ const VerticalCard = ({ packageData, onSelect }: VerticalCardProps) => {
                   key={index}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span className="text-gray-600">{content.name}</span>
-                  <span className="font-medium text-gray-800">
-                    {content.count}x
-                  </span>
+                  <span className="text-gray-600">{content.count} {content.name}</span>
                 </div>
               ))}
             </div>

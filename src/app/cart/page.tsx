@@ -473,7 +473,7 @@ const Cart: React.FC = () => {
                       <span>Verarbeiten...</span>
                     </div>
                   ) : (
-                    "Auftrag erstellen"
+                    "Angebot einholen"
                   )}
                 </button>
               </motion.div>

@@ -175,7 +175,7 @@ const Navbar = () => {
       `}
             >
               <span className="relative inline-flex items-center">
-                Eintragen
+                Einloggen
               </span>
             </Link>
 
