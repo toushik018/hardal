@@ -77,12 +77,18 @@ const Cart: React.FC = () => {
           const allProducts: CartProduct[] = [];
           const categoryMap = new Map<string, string>();
 
-          // If menu exists, use it to map all category IDs
-          if (cartData?.cart?.menu?.contents) {
+          // Add null check for menu contents
+          if (
+            cartData?.cart?.menu?.contents &&
+            Array.isArray(cartData.cart.menu.contents)
+          ) {
             cartData.cart.menu.contents.forEach((content: MenuContent) => {
-              content.ids.forEach((id) => {
-                categoryMap.set(id.toString(), content.name);
-              });
+              if (content?.ids) {
+                // Add check for content.ids
+                content.ids.forEach((id) => {
+                  categoryMap.set(id.toString(), content.name);
+                });
+              }
             });
           }
 

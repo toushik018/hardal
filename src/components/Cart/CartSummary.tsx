@@ -127,7 +127,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
             )}
           </ScrollArea>
 
-          <div className="border-t pt-4 mb-6">
+          {/* <div className="border-t pt-4 mb-6">
             {cartData?.totals?.map((total: any, index: number) => (
               <div
                 key={total.title}
@@ -155,7 +155,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
                 </span>
               </div>
             ))}
-          </div>
+          </div> */}
 
           <div className="flex gap-3">
             <button

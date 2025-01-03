@@ -71,7 +71,7 @@ export const MENU_CONTENTS: { [key: number]: MenuContent[] } = {
         },
         {
             name: "Extras",
-            ids: [63, 66, 69],
+            ids: [66, 69],
             count: 0
         }
     ],
@@ -98,7 +98,7 @@ export const MENU_CONTENTS: { [key: number]: MenuContent[] } = {
         },
         {
             name: "Extras",
-            ids: [63, 66, 69],
+            ids: [66, 69],
             count: 1
         }
     ],
@@ -125,8 +125,8 @@ export const MENU_CONTENTS: { [key: number]: MenuContent[] } = {
         },
         {
             name: "Extras",
-            ids: [63, 66, 69],
-            count: 1
+            ids: [66, 69],
+            count: 1,
         }
     ],
     4: [ // Fingerfood Menu
@@ -147,7 +147,7 @@ export const MENU_CONTENTS: { [key: number]: MenuContent[] } = {
         },
         {
             name: "Extras",
-            ids: [63, 66, 69],
+            ids: [ 66, 69],
             count: 1
         }
     ],
@@ -174,7 +174,7 @@ export const MENU_CONTENTS: { [key: number]: MenuContent[] } = {
         },
         {
             name: "Extras",
-            ids: [63, 66, 69],
+            ids: [ 66, 69],
             count: 1
         }
     ],
@@ -201,7 +201,7 @@ export const MENU_CONTENTS: { [key: number]: MenuContent[] } = {
         },
         {
             name: "Extras",
-            ids: [63, 66, 69],
+            ids: [ 66, 69],
             count: 1
         }
     ]

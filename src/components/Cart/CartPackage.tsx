@@ -3,6 +3,7 @@ import { PackageOrder, MenuContent, CartProduct } from "../../types/types";
 import { CartItem } from "./CartItem";
 import { Trash2, Loader2 } from "lucide-react";
 import { getMenuContents } from "@/constants/categories";
+import { getPackageMenuId } from "@/utils/menuUtils";
 
 interface CartPackageProps {
   pkg: PackageOrder;
@@ -15,18 +16,6 @@ interface CartPackageProps {
   handleDeletePackage: () => void;
 }
 
-const getPackageMenuId = (packageName: string): number | undefined => {
-  const packageMap: { [key: string]: number } = {
-    "Classic Menü": 1,
-    "Signature Menü": 2,
-    "Exclusive Menü": 3,
-    "Fingerfood Menü": 4,
-    "BBQ Menü": 5,
-    "Fisch Menü": 6,
-  };
-  return packageMap[packageName];
-};
-
 export const CartPackage: React.FC<CartPackageProps> = ({
   pkg,
   cartData,
@@ -37,45 +26,61 @@ export const CartPackage: React.FC<CartPackageProps> = ({
   isDeleting,
   handleDeletePackage,
 }) => {
-  const renderProducts = () => {
-    if (!pkg?.products) {
-      console.warn("No products found in package:", pkg);
-      return null;
-    }
-
-    // Group products by category
+  const getGroupedProducts = () => {
     const groupedProducts: { [key: string]: CartProduct[] } = {};
 
-    // Process each product and group by category
-    Object.entries(pkg.products).forEach(([categoryId, products]) => {
-      if (!Array.isArray(products)) return;
-
-      // Get category name from menu contents
-      let categoryName = "Andere";
-
-      // Get menu ID from package name instead of using pkg.id
+    if (pkg.products && typeof pkg.products === "object") {
       const menuId = getPackageMenuId(pkg.package);
       const menuContents =
         cartData?.cart?.menu?.contents ||
         (menuId ? getMenuContents(menuId) : []);
 
-      if (menuContents?.length > 0) {
-        const category = menuContents.find((content: { ids: number[]; }) =>
-          content.ids.includes(parseInt(categoryId))
-        );
-        if (category?.name) {
-          categoryName = category.name;
+      Object.entries(pkg.products).forEach(([categoryId, products]) => {
+        if (!Array.isArray(products)) return;
+
+        let categoryName = "Andere";
+
+        if (menuContents?.length > 0) {
+          const category = menuContents.find((content: { ids?: number[] }) => {
+            return content?.ids && content.ids.includes(parseInt(categoryId));
+          });
+
+          if (category?.name) {
+            categoryName = category.name;
+          } else {
+            const fallbackContents = menuId ? getMenuContents(menuId) : [];
+            const fallbackCategory = fallbackContents.find(
+              (content) =>
+                content.ids && content.ids.includes(parseInt(categoryId))
+            );
+            if (fallbackCategory?.name) {
+              categoryName = fallbackCategory.name;
+            }
+          }
         }
-      }
 
-      // Initialize category array if needed
-      if (!groupedProducts[categoryName]) {
-        groupedProducts[categoryName] = [];
-      }
+        if (!groupedProducts[categoryName]) {
+          groupedProducts[categoryName] = [];
+        }
 
-      // Add products to category
-      groupedProducts[categoryName].push(...products);
-    });
+        products.forEach((product) => {
+          if (product) {
+            groupedProducts[categoryName].push(product);
+          }
+        });
+      });
+    }
+
+    return groupedProducts;
+  };
+
+  const groupedProducts = getGroupedProducts();
+
+  const renderProducts = () => {
+    if (!pkg?.products) {
+      console.warn("No products found in package:", pkg);
+      return null;
+    }
 
     console.log("Package ID:", pkg.id);
     console.log("Menu Contents from API:", cartData?.cart?.menu?.contents);
@@ -140,3 +145,5 @@ export const CartPackage: React.FC<CartPackageProps> = ({
     </div>
   );
 };
+
+export default CartPackage;
